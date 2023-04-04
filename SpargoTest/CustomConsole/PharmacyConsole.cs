@@ -3,8 +3,15 @@ using SpargoTest.Models;
 
 namespace SpargoTest.CustomConsole
 {
+    /// <summary>
+    /// Консольный функционал для аптек
+    /// </summary>
     public class PharmacyConsole : IConsole<Pharmacy>
     {
+        /// <summary>
+        /// Создание аптеки через консоль
+        /// </summary>
+        /// <returns>Аптека</returns>
         public Pharmacy Get()
         {
             var pharmacy = new Pharmacy();

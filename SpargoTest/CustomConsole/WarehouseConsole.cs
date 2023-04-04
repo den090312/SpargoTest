@@ -9,8 +9,15 @@ using SpargoTest.Models;
 
 namespace SpargoTest.CustomConsole
 {
+    /// <summary>
+    /// Консольный функционал для складов
+    /// </summary>
     public class WarehouseConsole : IConsole<Warehouse>
     {
+        /// <summary>
+        /// Создание склада через консоль
+        /// </summary>
+        /// <returns></returns>
         public Warehouse Get()
         {
             var warehouse = new Warehouse();

@@ -21,6 +21,13 @@ namespace SpargoTest
         
         public static string ConsignmentListTitle { get; } = $"{_listTitle} партий";
 
+        /// <summary>
+        /// Запуск пункта меню
+        /// </summary>
+        /// <param name="menuTitle">Заголовок меню</param>
+        /// <param name="menuItems">Перечисление пунктов меню</param>
+        /// <param name="choice">Выбор опции для действия</param>
+        /// <param name="proceed">Индикатор запуска действия пункта меню</param>
         public void Go(string menuTitle, IEnumerable<string> menuItems, ref int choice, out bool proceed)
         {
             var exit = false;
@@ -61,7 +68,14 @@ namespace SpargoTest
             }
         }
 
-        public void Action<T>(int choice, ICrud crud, IConsole<T> menu)
+        /// <summary>
+        /// Действие в меню
+        /// </summary>
+        /// <typeparam name="T">Тип объекта действия</typeparam>
+        /// <param name="choice">Выбор опции для действия с объектом</param>
+        /// <param name="crud">Набор операций с объектом</param>
+        /// <param name="console">Консольный интерфейс</param>
+        public void Action<T>(int choice, ICrud crud, IConsole<T> console)
         {
             if (choice == 2)
                 Delete<T>(crud);
@@ -69,7 +83,7 @@ namespace SpargoTest
             if (choice != 1)
                 return;
 
-            crud.Create<T>(menu.Get(), out CrudResult crudResult);
+            crud.Create<T>(console.Get(), out CrudResult crudResult);
         }
 
         private static void Delete<T>(ICrud crud)

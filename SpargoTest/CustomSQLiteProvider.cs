@@ -133,7 +133,7 @@ namespace SpargoTest
         }
 
         /// <summary>
-        /// Создание таблиц БД, соотв. моделям из папки Models
+        /// Создание таблиц БД, соотв. моделям из папки Program.ModelsFolderName
         /// </summary>
         private void CreateTables()
         {

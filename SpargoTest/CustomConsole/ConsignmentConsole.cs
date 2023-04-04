@@ -9,8 +9,15 @@ using SpargoTest.Models;
 
 namespace SpargoTest.CustomConsole
 {
+    /// <summary>
+    /// Консольный функционал для партий товара
+    /// </summary>
     public class ConsignmentConsole : IConsole<Consignment>
     {
+        /// <summary>
+        /// Создание партии через консоль
+        /// </summary>
+        /// <returns>Партия товара</returns>
         public Consignment Get()
         {
             var consignment = new Consignment();
