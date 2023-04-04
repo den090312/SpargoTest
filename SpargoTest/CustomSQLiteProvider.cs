@@ -149,7 +149,8 @@ namespace SpargoTest
                 var className = Path.GetFileNameWithoutExtension(modelFile);
                 var classType = assembly
                     .GetTypes()
-                    .FirstOrDefault(t => t.Name.Contains(className));
+                    .FirstOrDefault(t => t.FullName != null 
+                        && t.FullName.Contains($"Models.{className}"));
 
                 if (classType == default)
                     continue;
