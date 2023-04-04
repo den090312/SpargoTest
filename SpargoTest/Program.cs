@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Reflection;
 
 using Microsoft.Data.Sqlite;
 
@@ -9,7 +10,16 @@ namespace SpargoTest
 {
     public class Program
     {
-        public static string BaseDirectory => AppDomain.CurrentDomain.BaseDirectory;
+        public static string BaseDirectory()
+        {
+            var appRoot = AppDomain.CurrentDomain.BaseDirectory;
+            
+            #if DEBUG
+                appRoot = Path.GetFullPath(Path.Combine(appRoot, @"..\..\..\"));
+            #endif
+
+            return appRoot;
+        }
 
         static void Main(string[] args)
         {
@@ -35,7 +45,7 @@ namespace SpargoTest
                 else
                 {
                     var menu = new Menu();
-                    var storage = new Storage(new CustomSQLiteProvider());
+                    var storage = new Storage(new CustomSQLiteProvider(createTables:true));
 
                     switch (choice)
                     {
