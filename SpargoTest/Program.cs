@@ -11,30 +11,8 @@ namespace SpargoTest
     {
         public static string BaseDirectory => AppDomain.CurrentDomain.BaseDirectory;
 
-        //ToDo: Написать проверку на существование в нужной папке файлов dbName и sqliteExeFileName
-
-        //private static string dbName = "spargo_test.db";
-        //private static string sqliteExeFileName = "sqlite3.exe";
-        //private static string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-
         static void Main(string[] args)
         {
-            //var command = "SELECT name FROM sqlite_master WHERE type='table';";
-
-            //var startInfo = new ProcessStartInfo
-            //{
-            //    FileName = Path.Combine(baseDirectory, sqliteExeFileName),
-            //    Arguments = $"{Path.Combine(baseDirectory, dbName)} \"{command}\"",
-            //    RedirectStandardOutput = true,
-            //    UseShellExecute = false
-            //};
-
-            //using (var process = Process.Start(startInfo))
-            //{
-            //    var output = process?.StandardOutput.ReadToEnd();
-            //    Console.Write(output); 
-            //}
-
             MainMenu();
         }
 
