@@ -4,10 +4,22 @@ using SpargoTest.Interfaces;
 
 namespace SpargoTest
 {
+    /// <summary>
+    /// Провайдер базы данных SQLite
+    /// </summary>
     public class CustomSQLiteProvider : IDatabaseProvider
     {
+        /// <summary>
+        /// Строка подключения к базе данных SQLite
+        /// </summary>
         private readonly string _connectionString = "Data Source=spargo_test.db";
 
+        /// <summary>
+        /// Записать объект в базу данных SQLite
+        /// </summary>
+        /// <typeparam name="T">Тип записываемого объекта</typeparam>
+        /// <param name="obj">Объект для записи</param>
+        /// <param name="crudResult">Возможнеы ошибки при записи</param>
         public void Add<T>(T obj, out CrudResult crudResult)
         {
             var type = typeof(T);
@@ -42,6 +54,12 @@ namespace SpargoTest
             }
         }
 
+        /// <summary>
+        /// Получить перечень всех объектов из базы данных SQLite
+        /// </summary>
+        /// <typeparam name="T">Тип получаемых объектов</typeparam>
+        /// <param name="crudResult">Возможные ошибки при получении объектов</param>
+        /// <returns>Перечень объектов</returns>
         public IEnumerable<T> GetAll<T>(out CrudResult crudResult)
         {
             var result = new List<T>();

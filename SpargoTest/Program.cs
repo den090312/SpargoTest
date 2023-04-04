@@ -48,14 +48,20 @@ namespace SpargoTest
                         case 2:
                             menu.Go(Menu.PharmacyListTitle + ":", 
                                 new List<string> { $"{Menu.CreateTitle} аптеку", $"{Menu.DeleteTitle} аптеку" }, ref choice, out proceed);
+                            if (proceed)
+                                menu.Action<Pharmacy>(choice, storage);
                             break;
                         case 3:
                             menu.Go(Menu.WarehouseListTitle + ":", 
                                 new List<string> { $"{Menu.CreateTitle} склад", $"{Menu.DeleteTitle} склад" }, ref choice, out proceed);
+                            if (proceed)
+                                menu.Action<Warehouse>(choice, storage);
                             break;
                         case 4:
                             menu.Go(Menu.ConsignmentListTitle + ":", 
                                 new List<string> { $"{Menu.CreateTitle} партию", $"{Menu.DeleteTitle} партию" }, ref choice, out proceed);
+                            if (proceed)
+                                menu.Action<Consignment>(choice, storage);
                             break;
                         case 5:
                             // Вывод списка товаров и их количества в выбранной аптеке
