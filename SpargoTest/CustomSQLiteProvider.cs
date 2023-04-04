@@ -139,7 +139,7 @@ namespace SpargoTest
         {
             var assembly = Assembly.GetExecutingAssembly();
 
-            var modelsPath = Path.Combine(Program.BaseDirectory(), "Models");
+            var modelsPath = Path.Combine(Program.BaseDirectory(), Program.ModelsFolderName);
             var modelFiles = Directory.GetFiles(modelsPath, "*.cs");
 
             var createTablesQuery = new StringBuilder();
@@ -150,7 +150,7 @@ namespace SpargoTest
                 var classType = assembly
                     .GetTypes()
                     .FirstOrDefault(t => t.FullName != null 
-                        && t.FullName.Contains($"Models.{className}"));
+                        && t.FullName.Contains($"{Program.ModelsFolderName}.{className}"));
 
                 if (classType == default)
                     continue;

@@ -1,4 +1,6 @@
-﻿using SpargoTest.Interfaces;
+﻿using System.ComponentModel.Design;
+
+using SpargoTest.Interfaces;
 using SpargoTest.Models;
 
 namespace SpargoTest
@@ -59,36 +61,37 @@ namespace SpargoTest
             }
         }
 
-        public void Action<T>(int choice, ICrud crud)
+        public void Action<T>(int choice, ICrud crud, IConsole<T> menu)
         {
-            if (choice == 1)
-            {
-                Console.WriteLine("Введите наименование:");
-
-                crud.Create<Product>(new Product { Name = Console.ReadLine() }, out CrudResult crudResult);
-            }
-
             if (choice == 2)
+                Delete<T>(crud);
+
+            if (choice != 1)
+                return;
+
+            crud.Create<T>(menu.Get(), out CrudResult crudResult);
+        }
+
+        private static void Delete<T>(ICrud crud)
+        {
+            Console.WriteLine("Введите идентификатор для удаления:");
+
+            var exit = false;
+
+            while (!exit)
             {
-                Console.WriteLine("Введите идентификатор для удаления:");
-
-                var ProductIdExit = false;
-
-                while (!ProductIdExit)
+                if (!int.TryParse(Console.ReadLine(), out int Id))
+                    Console.WriteLine("Введите корректное число!");
+                else
                 {
-                    if (!int.TryParse(Console.ReadLine(), out int Id))
-                        Console.WriteLine("Введите корректное число!");
-                    else
-                    {
-                        ProductIdExit = true;
+                    exit = true;
 
-                        crud.Delete<T>(Id, out CrudResult crudResult);
-                    }
+                    crud.Delete<T>(Id, out CrudResult crudResult);
                 }
             }
         }
 
         private static void WriteError(IEnumerable<string> menuItems) 
-            => Console.WriteLine("Неверный ввод. Пожалуйста, введите число от 1 до {0}.", menuItems.Count() + 1);
+            => Console.WriteLine($"Неверный ввод. Пожалуйста, введите число от 1 до {menuItems.Count() + 1}.");
     }
 }

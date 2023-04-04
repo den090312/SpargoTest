@@ -1,4 +1,6 @@
-﻿namespace SpargoTest.Models
+﻿using SpargoTest.Interfaces;
+
+namespace SpargoTest.Models
 {
     /// <summary>
     /// Аптека
