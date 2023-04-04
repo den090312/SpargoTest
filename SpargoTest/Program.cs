@@ -2,8 +2,6 @@
 using System.Diagnostics;
 using System.Reflection;
 
-using Microsoft.Data.Sqlite;
-
 using SpargoTest.CustomConsole;
 using SpargoTest.Models;
 
@@ -48,7 +46,16 @@ namespace SpargoTest
                 else
                 {
                     var menu = new Menu();
-                    var storage = new Storage(new CustomSQLiteProvider(createTables:true));
+                    var dbProvider = new CustomSqlProvider(createTables: true);
+
+                    if (!dbProvider.ConnectionIsOk())
+                    {
+                        Console.WriteLine("Не удалось соединиться с базой данных");
+
+                        return;
+                    }
+
+                    var storage = new Storage(dbProvider);
 
                     switch (choice)
                     {

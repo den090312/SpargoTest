@@ -5,6 +5,12 @@
     /// </summary>
     public interface IDatabaseProvider
     {
+        /// <summary>
+        /// Тест соединения с базой данных
+        /// </summary>
+        /// <returns>Индикатор успешного соединения</returns>
+        bool ConnectionIsOk();
+
         void Add<T>(T obj, out CrudResult crudResult);
 
         /// <summary>

@@ -1,30 +1,45 @@
-﻿using System.Reflection;
+﻿using System.Data.SqlClient;
+using System.Reflection;
 using System.Text;
-
-using Microsoft.Data.Sqlite;
 
 using SpargoTest.Interfaces;
 
 namespace SpargoTest
 {
     /// <summary>
-    /// Провайдер базы данных SQLite
+    /// Провайдер базы данных SQL Server
     /// </summary>
-    public class CustomSQLiteProvider : IDatabaseProvider
+    public class SqlServerProvider : IDatabaseProvider
     {
         /// <summary>
         /// Строка подключения к базе данных SQLite
         /// </summary>
-        private readonly string _connectionString = "Data Source=spargo_test.db";
+        private readonly string _connectionString = "Server=(localdb)\\mssqllocaldb;Database=SpargoTest;Trusted_Connection=True;";
 
         /// <summary>
         /// Конструктор провайдера базы данных SQLite
         /// </summary>
         /// <param name="createTables">Создание таблиц</param>
-        public CustomSQLiteProvider(bool createTables = false)
+        public SqlServerProvider(bool createTables = false)
         {
             if (createTables)
                 CreateTables();
+        }
+
+        public bool ConnectionIsOk()
+        {
+            using var connection = new SqlConnection(_connectionString);
+
+            try
+            {
+                connection.Open();
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -44,18 +59,18 @@ namespace SpargoTest
 
             var commandText = $"INSERT INTO {type.Name} ({string.Join(", ", fieldNames)}) VALUES ({string.Join(", ", parameterNames)})";
 
-            var parameters = new List<SqliteParameter>();
+            var parameters = new List<SqlParameter>();
 
             foreach (var property in properties)
-                parameters.Add(new SqliteParameter("@" + property.Name, property.GetValue(obj)));
+                parameters.Add(new SqlParameter("@" + property.Name, property.GetValue(obj)));
 
             var rowsAffected = 0;
 
-            using (var connection = new SqliteConnection(_connectionString))
+            using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
                 
-                using var command = new SqliteCommand(commandText, connection);
+                using var command = new SqlCommand(commandText, connection);
                 command.Parameters.AddRange(parameters.ToArray());
 
                 rowsAffected = command.ExecuteNonQuery();
@@ -77,10 +92,10 @@ namespace SpargoTest
         {
             var result = new List<T>();
             
-            using var connection = new SqliteConnection(_connectionString);
+            using var connection = new SqlConnection(_connectionString);
             connection.Open();
             
-            using var command = new SqliteCommand($"SELECT * FROM {typeof(T).Name}", connection);
+            using var command = new SqlCommand($"SELECT * FROM {typeof(T).Name}", connection);
             using var reader = command.ExecuteReader();
             
             while (reader.Read())
@@ -116,12 +131,12 @@ namespace SpargoTest
             
             var rowsAffected = 0;
             
-            using (var connection = new SqliteConnection(_connectionString))
+            using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
                 
-                using var command = new SqliteCommand(commandText, connection);
-                command.Parameters.Add(new SqliteParameter("@Id", Id));
+                using var command = new SqlCommand(commandText, connection);
+                command.Parameters.Add(new SqlParameter("@Id", Id));
                 
                 rowsAffected = command.ExecuteNonQuery();
             }
@@ -155,12 +170,12 @@ namespace SpargoTest
                 if (classType == default)
                     continue;
 
-                createTablesQuery.AppendLine($"CREATE TABLE IF NOT EXISTS {className} (");
+                createTablesQuery.AppendLine($"CREATE TABLE {className} (");
 
                 foreach (var property in classType.GetProperties())
                 {
                     var columnName = property.Name;
-                    var columnType = GetSQLiteType(property.PropertyType);
+                    var columnType = GetSqlType(property.PropertyType);
 
                     createTablesQuery.AppendLine($"{columnName} {columnType},");
                 }
@@ -169,46 +184,58 @@ namespace SpargoTest
                 createTablesQuery.AppendLine(");");
             }
 
-            using var connection = new SqliteConnection(_connectionString);
+            using var connection = new SqlConnection(_connectionString);
             connection.Open();
 
             var str = createTablesQuery.ToString();
 
-            using var command = new SqliteCommand(str, connection);
+            using var command = new SqlCommand(str, connection);
             command.ExecuteNonQuery();
         }
 
-        private string GetSQLiteType(Type type)
+        private string GetSqlType(Type type)
         {
             var typeCode = Type.GetTypeCode(type);
 
             switch (typeCode)
             {
                 case TypeCode.Boolean:
+                    return "BIT";
                 case TypeCode.Byte:
+                    return "TINYINT";
                 case TypeCode.Char:
+                    return "NCHAR(1)";
                 case TypeCode.Int16:
+                    return "SMALLINT";
                 case TypeCode.Int32:
+                    return "INT";
                 case TypeCode.Int64:
+                    return "BIGINT";
                 case TypeCode.SByte:
+                    return "SMALLINT";
                 case TypeCode.UInt16:
+                    return "INT";
                 case TypeCode.UInt32:
+                    return "BIGINT";
                 case TypeCode.UInt64:
-                    return "INTEGER";
+                    return "DECIMAL(20)";
                 case TypeCode.Single:
-                case TypeCode.Double:
-                case TypeCode.Decimal:
                     return "REAL";
+                case TypeCode.Double:
+                    return "FLOAT";
+                case TypeCode.Decimal:
+                    return "DECIMAL(18, 0)";
                 case TypeCode.DateTime:
+                    return "DATETIME2";
                 case TypeCode.String:
-                    return "TEXT";
+                    return "NVARCHAR(MAX)";
                 default:
                     if (type == typeof(byte[]))
-                        return "BLOB";
+                        return "VARBINARY(MAX)";
                     if (type == typeof(Guid))
-                        return "TEXT";
+                        return "UNIQUEIDENTIFIER";
                     if (type.IsEnum)
-                        return "INTEGER";
+                        return "INT";
 
                     throw new NotSupportedException($"Тип {type} не поддерживается.");
             }

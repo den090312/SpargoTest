@@ -15,7 +15,7 @@ namespace SpargoTest
         /// <summary>
         /// Провайдер базы данных для работы с хранилищем
         /// </summary>
-        private readonly IDatabaseProvider _sqlProvider;
+        private readonly IDatabaseProvider _databaseProvider;
 
         /// <summary>
         /// Конструктор хранилища объектов
@@ -23,7 +23,7 @@ namespace SpargoTest
         /// <param name="sqlProvider">Провайдер базы данных</param>
         /// <exception cref="ArgumentNullException">Исключение при передаче в конструктор значения null</exception>
         public Storage(IDatabaseProvider sqlProvider) 
-            => _sqlProvider = sqlProvider ?? throw new ArgumentNullException(nameof(sqlProvider));
+            => _databaseProvider = sqlProvider ?? throw new ArgumentNullException(nameof(sqlProvider));
 
         /// <summary>
         /// Создание объекта в хранилище
@@ -32,7 +32,7 @@ namespace SpargoTest
         /// <param name="obj">Создаваемый объект</param>
         /// <param name="crudResult">Возможные ошибки при создании объекта</param>
         public void Create<T>(T obj, out CrudResult crudResult) 
-            => _sqlProvider.Add(obj, out crudResult);
+            => _databaseProvider.Add(obj, out crudResult);
 
         /// <summary>
         /// Удаление объекта из хранилища
@@ -41,7 +41,7 @@ namespace SpargoTest
         /// <param name="Id">Идентификатор удаляемого объекта</param>
         /// <param name="crudResult">Возможные ошибки при удалении объектов</param>
         public void Delete<T>(int Id, out CrudResult crudResult) 
-            => _sqlProvider.Remove<T>(Id, out crudResult);
+            => _databaseProvider.Remove<T>(Id, out crudResult);
 
         /// <summary>
         /// Чтение объектов из хранилища
@@ -51,6 +51,6 @@ namespace SpargoTest
         /// <param name="crudResult">Возможные ошибки при чтении объектов</param>
         /// <returns></returns>
         public IEnumerable<T> Read<T>(out CrudResult crudResult) 
-            => _sqlProvider.GetAll<T>(out crudResult);
+            => _databaseProvider.GetAll<T>(out crudResult);
     }
 }
