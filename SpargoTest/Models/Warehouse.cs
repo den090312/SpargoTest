@@ -13,7 +13,7 @@
         /// <summary>
         /// Идентификатор аптеки
         /// </summary>
-        public int PharmacyId { get; set; }
+        public int? PharmacyId { get; set; }
         
         /// <summary>
         /// Наименование склада

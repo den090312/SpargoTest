@@ -201,6 +201,7 @@ namespace SpargoTest
             var modelFiles = Directory.GetFiles(modelsPath, "*.cs");
 
             var createTablesQuery = new StringBuilder();
+            var foreignKeysQuery = new StringBuilder();
 
             foreach (var modelFile in modelFiles)
             {
@@ -228,6 +229,16 @@ namespace SpargoTest
                         createTablesQuery.AppendLine($"{columnName} {columnType} IDENTITY(1,1) PRIMARY KEY,");
                     else
                         createTablesQuery.AppendLine($"{columnName} {columnType},");
+
+                    if (columnName.EndsWith("Id") && columnName != "Id")
+                    {
+                        var referencedTableName = columnName.Substring(0, columnName.Length - 2);
+                        foreignKeysQuery.AppendLine($"ALTER TABLE {className} " +
+                            $"ADD CONSTRAINT FK_{className}_{referencedTableName} " +
+                            $"FOREIGN KEY ({columnName}) " +
+                            $"REFERENCES {referencedTableName}(Id) " +
+                            $"ON DELETE CASCADE;");
+                    }
                 }
 
                 createTablesQuery.Length -= 3;
@@ -242,6 +253,12 @@ namespace SpargoTest
 
             using var command = new SqlCommand(createTablesQuery.ToString(), connection);
             command.ExecuteNonQuery();
+
+            if (foreignKeysQuery.Length > 0)
+            {
+                using var fkCommand = new SqlCommand(foreignKeysQuery.ToString(), connection);
+                fkCommand.ExecuteNonQuery();
+            }
         }
 
         private bool DatabaseExists(string tableName)

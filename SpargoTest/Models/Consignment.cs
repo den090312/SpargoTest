@@ -13,11 +13,11 @@
         /// <summary>
         /// Идентификатор продукта
         /// </summary>
-        public int ProductId { get; set; }
+        public int? ProductId { get; set; }
 
         /// <summary>
         /// Идентификатор склада
         /// </summary>
-        public int WarehouseId { get; set; }
+        public int? WarehouseId { get; set; }
     }
 }
