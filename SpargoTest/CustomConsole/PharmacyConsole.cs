@@ -28,9 +28,13 @@ namespace SpargoTest.CustomConsole
             return pharmacy;
         }
 
+        /// <summary>
+        /// Вывод перечня аптек через консоль
+        /// </summary>
+        /// <param name="crud">Интерфейс операций с аптеками</param>
         public void Output(ICrud crud)
         {
-            var pharmacies = crud.GetMany<Pharmacy>(out CrudResult readResult);
+            var pharmacies = crud.GetMany<Pharmacy>(out Result readResult);
 
             if (!readResult.Success)
                 Console.WriteLine($"Произошла ошибка при получении товаров: {readResult.ErrorMessage}");

@@ -14,7 +14,7 @@
     /// <summary>
     /// Результат операции
     /// </summary>
-    public class CrudResult
+    public class Result
     {
         /// <summary>
         /// Индикатор успешной операции
@@ -36,7 +36,7 @@
         /// </summary>
         /// <param name="operation">Тип операции</param>
         /// <param name="errorMessage">Сообщение об ошибке</param>
-        public CrudResult(CrudOperation operation, string errorMessage)
+        public Result(CrudOperation operation, string errorMessage)
         {
             Operation = operation;
             ErrorMessage = errorMessage;
@@ -46,7 +46,7 @@
         /// Конструктор результата операции
         /// </summary>
         /// <param name="operation">Тип операции</param>
-        public CrudResult(CrudOperation operation)
+        public Result(CrudOperation operation)
         {
             Operation = operation;
         }

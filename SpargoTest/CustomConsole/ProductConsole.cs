@@ -25,10 +25,10 @@ namespace SpargoTest.CustomConsole
         /// <summary>
         /// Вывод продуктов на консоль
         /// </summary>
-        /// <param name="crud">Хранилище</param>
+        /// <param name="crud">Интерфейс операций с продуктами</param>
         public void Output(ICrud crud)
         {
-            var products = crud.GetMany<Product>(out CrudResult readResult);
+            var products = crud.GetMany<Product>(out Result readResult);
 
             if (!readResult.Success)
                 Console.WriteLine($"Произошла ошибка при получении товаров: {readResult.ErrorMessage}");

@@ -1,14 +1,17 @@
 ﻿namespace SpargoTest.Interfaces
 {
+    /// <summary>
+    /// Подменю
+    /// </summary>
     public interface ISubMenu
     {
         /// <summary>
-        /// Заголовок пункта меню
+        /// Заголовок пункта подменю
         /// </summary>
         public string? Title { get; set; }
 
         /// <summary>
-        /// Список подпунктов меню
+        /// Список подпунктов подменю
         /// </summary>
         public IEnumerable<string?> Items { get; set; }
     }

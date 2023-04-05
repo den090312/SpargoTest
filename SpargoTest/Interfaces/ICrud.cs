@@ -1,7 +1,7 @@
 ﻿namespace SpargoTest.Interfaces
 {
     /// <summary>
-    /// Набор операций с объектами
+    /// Интерфейс операций с объектами
     /// </summary>
     public interface ICrud
     {
@@ -12,7 +12,7 @@
         /// <typeparam name="Id">Идентификатор получаемого объекта</typeparam>
         /// <param name="crudResult">Возможные ошибки при получении объекта</param>
         /// <returns>Получаемый объект</returns>
-        T? Get<T>(int Id, out CrudResult crudResult);
+        T? Get<T>(int Id, out Result crudResult);
 
         /// <summary>
         /// Получение перечня объектов
@@ -20,7 +20,7 @@
         /// <typeparam name="T">Тип получаемых объектов</typeparam>
         /// <param name="crudResult">Возможные ошибки при получении объектов</param>
         /// <returns>Перечень объектов</returns>
-        IEnumerable<T> GetMany<T>(out CrudResult crudResult);
+        IEnumerable<T> GetMany<T>(out Result crudResult);
 
         /// <summary>
         /// Создать объект
@@ -28,7 +28,7 @@
         /// <typeparam name="T">Тип объекта</typeparam>
         /// <param name="obj">Объект</param>
         /// <param name="crudResult">Возможные ошибки при создании объекта</param>
-        void Create<T>(T obj, out CrudResult crudResult);
+        void Create<T>(T obj, out Result crudResult);
 
         /// <summary>
         /// Удалить объект
@@ -36,6 +36,6 @@
         /// <typeparam name="T">Тип объекта</typeparam>
         /// <param name="Id">Идентификатор объекта</param>
         /// <param name="crudResult">Возможные ошибки при удалении объекта</param>
-        void Remove<T>(int Id, out CrudResult crudResult);
+        void Remove<T>(int Id, out Result crudResult);
     }
 }

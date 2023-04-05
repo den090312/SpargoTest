@@ -17,7 +17,7 @@
         /// <typeparam name="T">Тип добавляемого объекта</typeparam>
         /// <param name="obj">Добавляемый объект</param>
         /// <param name="crudResult">Возможные ошибки при добавлении объекта</param>
-        void Add<T>(T obj, out CrudResult crudResult);
+        void Add<T>(T obj, out Result crudResult);
 
         /// <summary>
         /// Получение объекта из базы данных
@@ -26,7 +26,7 @@
         /// <param name="Id">Идентификатор объекта</param>
         /// <param name="crudResult">Возможные ошибки при получении объекта</param>
         /// <returns>Получаемый объект</returns>
-        T? Get<T>(int Id, out CrudResult crudResult);
+        T? Get<T>(int Id, out Result crudResult);
 
         /// <summary>
         /// Получение всех объектов типа Т из базы данных
@@ -34,7 +34,7 @@
         /// <typeparam name="T">Тип получаемых объектов</typeparam>
         /// <param name="crudResult">Возможные ошибки при получении объектлв</param>
         /// <returns>Перечень объектов</returns>
-        IEnumerable<T> GetAll<T>(out CrudResult crudResult);
+        IEnumerable<T> GetAll<T>(out Result crudResult);
         
         /// <summary>
         /// Удаление объекта типа T из базы данных
@@ -42,6 +42,6 @@
         /// <typeparam name="T">Тип удаляемого объекта</typeparam>
         /// <param name="Id">Идентификатор удаляемого объекта</param>
         /// <param name="crudResult">Возможные ошибки при удалении объекта</param>
-        void Remove<T>(int Id, out CrudResult crudResult);
+        void Remove<T>(int Id, out Result crudResult);
     }
 }

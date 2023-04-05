@@ -41,9 +41,13 @@ namespace SpargoTest.CustomConsole
             return warehouse;
         }
 
+        /// <summary>
+        /// Вывод перечня складов на консоль
+        /// </summary>
+        /// <param name="crud">Интерфейс операций со складами</param>
         public void Output(ICrud crud)
         {
-            var warehouses = crud.GetMany<Warehouse>(out CrudResult readResult);
+            var warehouses = crud.GetMany<Warehouse>(out Result readResult);
 
             if (!readResult.Success)
                 Console.WriteLine($"Произошла ошибка при получении товаров: {readResult.ErrorMessage}");

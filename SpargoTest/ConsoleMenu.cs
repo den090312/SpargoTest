@@ -93,7 +93,7 @@ namespace SpargoTest
             if (choice != 1)
                 return;
 
-            crud.Create<T>(io.Input(), out CrudResult crudResult);
+            crud.Create<T>(io.Input(), out Result crudResult);
 
             SuccessMessage(crudResult);
         }
@@ -110,7 +110,7 @@ namespace SpargoTest
         /// Вывод сообщения об успешном выполнении операции
         /// </summary>
         /// <param name="crudResult">Результат операции</param>
-        private static void SuccessMessage(CrudResult crudResult)
+        private static void SuccessMessage(Result crudResult)
         {
             if (crudResult.Success)
                 Console.WriteLine("Операция выполнена успешно");
@@ -135,7 +135,7 @@ namespace SpargoTest
                 {
                     exit = true;
 
-                    crud.Remove<T>(Id, out CrudResult crudResult);
+                    crud.Remove<T>(Id, out Result crudResult);
 
                     SuccessMessage(crudResult);
                 }

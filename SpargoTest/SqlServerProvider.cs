@@ -26,6 +26,10 @@ namespace SpargoTest
                 CreateTables();
         }
 
+        /// <summary>
+        /// Тест подключения к базе
+        /// </summary>
+        /// <returns>Результат теста поключения</returns>
         public bool ConnectionIsOk()
         {
             using var connection = new SqlConnection(_connectionString);
@@ -48,7 +52,7 @@ namespace SpargoTest
         /// <typeparam name="T">Тип записываемого объекта</typeparam>
         /// <param name="obj">Объект для записи</param>
         /// <param name="crudResult">Возможнеы ошибки при записи</param>
-        public void Add<T>(T obj, out CrudResult crudResult)
+        public void Add<T>(T obj, out Result crudResult)
         {
             var type = typeof(T);
 
@@ -77,9 +81,9 @@ namespace SpargoTest
             }
 
             if (rowsAffected > 0)
-                crudResult = new CrudResult(CrudOperation.Create);
+                crudResult = new Result(CrudOperation.Create);
             else
-                crudResult = new CrudResult(CrudOperation.Create, "Ошибка при добавлении объекта в базу данных");
+                crudResult = new Result(CrudOperation.Create, "Ошибка при добавлении объекта в базу данных");
         }
 
         /// <summary>
@@ -89,7 +93,7 @@ namespace SpargoTest
         /// <param name="Id">Идентификатор объекта</param>
         /// <param name="crudResult"></param>
         /// <returns>Получаемый объект</returns>
-        public T? Get<T>(int Id, out CrudResult crudResult)
+        public T? Get<T>(int Id, out Result crudResult)
         {
             using var connection = new SqlConnection(_connectionString);
             connection.Open();
@@ -111,12 +115,12 @@ namespace SpargoTest
                         property.SetValue(item, value);
                 }
 
-                crudResult = new CrudResult(CrudOperation.Read);
+                crudResult = new Result(CrudOperation.Read);
 
                 return item;
             }
 
-            crudResult = new CrudResult(CrudOperation.Read, "Объект не найден в БД");
+            crudResult = new Result(CrudOperation.Read, "Объект не найден в БД");
 
             return default;
         }
@@ -127,7 +131,7 @@ namespace SpargoTest
         /// <typeparam name="T">Тип получаемых объектов</typeparam>
         /// <param name="crudResult">Возможные ошибки при получении объектов</param>
         /// <returns>Перечень объектов</returns>
-        public IEnumerable<T> GetAll<T>(out CrudResult crudResult)
+        public IEnumerable<T> GetAll<T>(out Result crudResult)
         {
             var result = new List<T>();
             
@@ -152,16 +156,16 @@ namespace SpargoTest
                 result.Add(item);
             }
 
-            crudResult = new CrudResult(CrudOperation.Read);
+            crudResult = new Result(CrudOperation.Read);
             
             return result;
         }
 
-        public void Remove<T>(int Id, out CrudResult crudResult)
+        public void Remove<T>(int Id, out Result crudResult)
         {
             if (Id == default)
             {
-                crudResult = new CrudResult(CrudOperation.Delete, "Некорректное значение идентификатора");
+                crudResult = new Result(CrudOperation.Delete, "Некорректное значение идентификатора");
                 
                 return;
             }
@@ -181,9 +185,9 @@ namespace SpargoTest
             }
 
             if (rowsAffected > 0)
-                crudResult = new CrudResult(CrudOperation.Delete);
+                crudResult = new Result(CrudOperation.Delete);
             else
-                crudResult = new CrudResult(CrudOperation.Delete, "Ошибка при удалении объекта из базы данных");
+                crudResult = new Result(CrudOperation.Delete, "Ошибка при удалении объекта из базы данных");
         }
 
         /// <summary>
