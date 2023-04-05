@@ -6,8 +6,6 @@ using System.Reflection;
 using SpargoTest.CustomConsole;
 using SpargoTest.Interfaces;
 using SpargoTest.Menu;
-using SpargoTest.Models;
-using SpargoTest.Repository;
 using SpargoTest.Services;
 
 namespace SpargoTest
@@ -20,46 +18,62 @@ namespace SpargoTest
 
             while (!exit)
             {
-                Console.Clear();
-                Console.WriteLine("Главное меню:");
-                Console.WriteLine($"1. {ConsoleMenu.Products}");
-                Console.WriteLine($"2. {ConsoleMenu.Pharmacies}");
-                Console.WriteLine($"3. {ConsoleMenu.Warehouses}");
-                Console.WriteLine($"4. {ConsoleMenu.Consignments}");
-                Console.WriteLine("5. Вывести список товаров и их количество в выбранной аптеке");
-                Console.WriteLine("6. Пересоздать базу данных");
-                Console.WriteLine("7. Выход");
+                WriteMainMenu();
 
                 if (!int.TryParse(Console.ReadLine(), out int choice))
                     Console.WriteLine("Неверный ввод. Пожалуйста, введите число от 1 до 6.");
                 else
-                {
-                    switch (choice)
-                    {
-                        case 1:
-                            Choice(choice, ConsoleMenu.Products, "товар", new ProductConsole());
-                            break;
-                        case 2:
-                            Choice(choice, ConsoleMenu.Pharmacies, "аптеку", new PharmacyConsole());
-                            break;
-                        case 3:
-                            Choice(choice, ConsoleMenu.Warehouses, "склад", new WarehouseConsole());
-                            break;
-                        case 4:
-                            Choice(choice, ConsoleMenu.Consignments, "партию", new ConsignmentConsole());
-                            break;
-                        case 5:
-                            // Вывод списка товаров и их количества в выбранной аптеке
-                            break;
-                        case 6:
-                            Tools.InitializeDatabase();
-                            break;
-                        case 7:
-                            exit = true;
-                            break;
-                    }
-                }
+                    ChoiceProcessing(ref exit, choice);
             }
+        }
+
+        /// <summary>
+        /// Обработка выбора пункта меню
+        /// </summary>
+        /// <param name="exit">Индикатор выхода из меню</param>
+        /// <param name="choice">Маркер выбора</param>
+        private static void ChoiceProcessing(ref bool exit, int choice)
+        {
+            switch (choice)
+            {
+                case 1:
+                    Choice(choice, ConsoleMenu.Products, "товар", new ProductConsole());
+                    break;
+                case 2:
+                    Choice(choice, ConsoleMenu.Pharmacies, "аптеку", new PharmacyConsole());
+                    break;
+                case 3:
+                    Choice(choice, ConsoleMenu.Warehouses, "склад", new WarehouseConsole());
+                    break;
+                case 4:
+                    Choice(choice, ConsoleMenu.Consignments, "партию", new ConsignmentConsole());
+                    break;
+                case 5:
+                    //ToDo: Вывод списка товаров и их количества в выбранной аптеке
+                    break;
+                case 6:
+                    Tools.InitializeDatabase();
+                    break;
+                case 7:
+                    exit = true;
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Вывод главное меню
+        /// </summary>
+        private static void WriteMainMenu()
+        {
+            Console.Clear();
+            Console.WriteLine("Главное меню:");
+            Console.WriteLine($"1. {ConsoleMenu.Products}");
+            Console.WriteLine($"2. {ConsoleMenu.Pharmacies}");
+            Console.WriteLine($"3. {ConsoleMenu.Warehouses}");
+            Console.WriteLine($"4. {ConsoleMenu.Consignments}");
+            Console.WriteLine("5. Вывести список товаров и их количество в выбранной аптеке");
+            Console.WriteLine("6. Пересоздать базу данных");
+            Console.WriteLine("7. Выход");
         }
 
         /// <summary>

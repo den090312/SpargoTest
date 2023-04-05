@@ -12,18 +12,39 @@ namespace SpargoTest.Menu
     /// </summary>
     public class ConsoleMenu : IMainMenu
     {
+        /// <summary>
+        /// Заголовок списка 
+        /// </summary>
         private static readonly string _listTitle = "Список";
 
+        /// <summary>
+        /// Заголовок создания
+        /// </summary>
         public static string CreateTitle { get; } = "Создать";
 
+        /// <summary>
+        /// Заголовок удаления
+        /// </summary>
         public static string DeleteTitle { get; } = "Удалить";
 
+        /// <summary>
+        /// Заголовок списка продуктов
+        /// </summary>
         public static string Products { get; } = $"{_listTitle} товарных наименований";
 
+        /// <summary>
+        /// Заголовок списка аптек
+        /// </summary>
         public static string Pharmacies { get; } = $"{_listTitle} аптек";
 
+        /// <summary>
+        /// Заголовок списка складов
+        /// </summary>
         public static string Warehouses { get; } = $"{_listTitle} складов";
 
+        /// <summary>
+        /// Заголовок списка партий
+        /// </summary>
         public static string Consignments { get; } = $"{_listTitle} партий";
 
         /// <summary>
@@ -44,21 +65,7 @@ namespace SpargoTest.Menu
 
             while (!exit)
             {
-                Console.WriteLine(subMenu.Title);
-
-                Tools.Output(objects);
-
-                var i = 1;
-
-                foreach (var item in subMenu.Items)
-                {
-                    Console.WriteLine($"{i}. {item}");
-                    i++;
-                }
-
-                var menuItemsCount = subMenu.Items.Count();
-
-                Console.WriteLine($"{menuItemsCount + 1}. Назад");
+                WriteSubMenu(subMenu, objects, out int menuItemsCount);
 
                 if (!int.TryParse(Console.ReadLine(), out choice))
                     WriteError(menuItemsCount);
@@ -108,6 +115,31 @@ namespace SpargoTest.Menu
         /// <returns>Перечень пунктов меню</returns>
         public IEnumerable<string> GetSubMenu(string menuItem)
             => new List<string> { $"{CreateTitle} {menuItem}", $"{DeleteTitle} {menuItem}" };
+
+        /// <summary>
+        /// Вывод подменю
+        /// </summary>
+        /// <typeparam name="T">Тип объекта подменю</typeparam>
+        /// <param name="subMenu">Интерфейс работы подменю</param>
+        /// <param name="items">Пункты подменю</param>
+        /// <param name="menuItemsCount">Количество пунктов подменю</param>
+        private void WriteSubMenu<T>(ISubMenu subMenu, IEnumerable<T> items, out int menuItemsCount)
+        {
+            Console.WriteLine(subMenu.Title);
+            Tools.Output(items);
+
+            var i = 1;
+
+            foreach (var item in subMenu.Items)
+            {
+                Console.WriteLine($"{i}. {item}");
+                i++;
+            }
+
+            menuItemsCount = subMenu.Items.Count();
+
+            Console.WriteLine($"{menuItemsCount + 1}. Назад");
+        }
 
         /// <summary>
         /// Вывод сообщения об успешном выполнении операции
