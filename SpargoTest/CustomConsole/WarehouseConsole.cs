@@ -12,7 +12,7 @@ namespace SpargoTest.CustomConsole
     /// <summary>
     /// Консольный функционал для складов
     /// </summary>
-    public class WarehouseConsole : IInputOutput<Warehouse>
+    public class WarehouseConsole : IInput<Warehouse>
     {
         /// <summary>
         /// Создание склада через консоль
@@ -39,16 +39,6 @@ namespace SpargoTest.CustomConsole
             warehouse.Name = Console.ReadLine();
 
             return warehouse;
-        }
-
-        /// <summary>
-        /// Вывод перечня складов на консоль
-        /// </summary>
-        /// <param name="crud">Интерфейс операций со складами</param>
-        public void Output(IEnumerable<Warehouse> warehouses)
-        {
-            foreach (var warehouse in warehouses)
-                Console.WriteLine($"'Id': {warehouse.Id}, 'PharmacyId': {warehouse.PharmacyId}, 'Name': {warehouse.Name}");
         }
     }
 }

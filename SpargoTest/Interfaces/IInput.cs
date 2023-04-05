@@ -9,20 +9,15 @@ using SpargoTest.Models;
 namespace SpargoTest.Interfaces
 {
     /// <summary>
-    /// Интерфейс ввода-вывода
+    /// Интерфейс для ввода данных
     /// </summary>
-    /// <typeparam name="T">Тип объекта</typeparam>
-    public interface IInputOutput<T>
+    /// <typeparam name="T">Тип объекта данных</typeparam>
+    public interface IInput<T>
     {
         /// <summary>
         /// Ввод объекта
         /// </summary>
         /// <returns>Получаемый объект</returns>
         T Input();
-
-        /// <summary>
-        /// Вывод объектов
-        /// </summary>
-        void Output(IEnumerable<T> objects);
     }
 }

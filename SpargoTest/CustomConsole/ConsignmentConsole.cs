@@ -12,7 +12,7 @@ namespace SpargoTest.CustomConsole
     /// <summary>
     /// Консольный функционал для партий товара
     /// </summary>
-    public class ConsignmentConsole : IInputOutput<Consignment>
+    public class ConsignmentConsole : IInput<Consignment>
     {
         /// <summary>
         /// Создание партии через консоль
@@ -49,17 +49,6 @@ namespace SpargoTest.CustomConsole
             consignment.WarehouseId = warehouseId;
 
             return consignment;
-        }
-
-        /// <summary>
-        /// Вывод объектов на консоль
-        /// </summary>
-        public void Output(IEnumerable<Consignment> consignments)
-        {
-            foreach (var consignment in consignments)
-                Console.WriteLine($"'Id' - {consignment.Id}" +
-                    $", 'Name': {consignment.ProductId}" +
-                    $", 'Warehouse': {consignment.WarehouseId}");
         }
     }
 }

@@ -7,7 +7,7 @@ using SpargoTest.Models;
 namespace SpargoTest
 {
     /// <summary>
-    /// Главное меню
+    /// Главное консольное меню
     /// </summary>
     public class ConsoleMenu : IMainMenu
     {
@@ -32,8 +32,10 @@ namespace SpargoTest
         /// <param name="objects">Перечень объектов для подменю</param>
         /// <param name="io">Интерфейс ввода-вывода</param>
         /// <param name="choice">Выбор опции для действия</param>
-        public void Go<T>(ISubMenu subMenu, IEnumerable<T> objects, IInputOutput<T> io, out int choice, out bool proceed)
+        public void Go<T>(ISubMenu subMenu, IEnumerable<T> objects, out int choice, out bool proceed)
         {
+            Console.Clear();
+
             choice = 0;
             proceed = false;
 
@@ -43,7 +45,7 @@ namespace SpargoTest
             {
                 Console.WriteLine(subMenu.Title);
 
-                io.Output(objects);
+                Program.Output<T>(objects);
 
                 var i = 1;
 
@@ -85,7 +87,7 @@ namespace SpargoTest
         /// <param name="choice">Выбор опции для действия с объектом</param>
         /// <param name="crud">Набор операций с объектом</param>
         /// <param name="io">Интерфейс ввода-вывода</param>
-        public void Action<T>(int choice, ICrud crud, IInputOutput<T> io)
+        public void Action<T>(int choice, ICrud crud, IInput<T> io)
         {
             if (choice == 2)
                 Delete<T>(crud);

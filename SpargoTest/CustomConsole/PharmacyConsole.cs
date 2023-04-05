@@ -6,7 +6,7 @@ namespace SpargoTest.CustomConsole
     /// <summary>
     /// Консольный функционал для аптек
     /// </summary>
-    public class PharmacyConsole : IInputOutput<Pharmacy>
+    public class PharmacyConsole : IInput<Pharmacy>
     {
         /// <summary>
         /// Создание аптеки через консоль
@@ -26,19 +26,6 @@ namespace SpargoTest.CustomConsole
             pharmacy.PhoneNumber = Console.ReadLine();
 
             return pharmacy;
-        }
-
-        /// <summary>
-        /// Вывод перечня аптек на консоль
-        /// </summary>
-        /// <param name="crud">Интерфейс операций с аптеками</param>
-        public void Output(IEnumerable<Pharmacy> pharmacies)
-        {
-            foreach (var pharmacy in pharmacies)
-                Console.WriteLine($"'Id' - {pharmacy.Id}" +
-                    $", 'PharmacyId': {pharmacy.Name}" +
-                    $", 'Name': {pharmacy.Address}" +
-                    $", 'PhoneNumber': {pharmacy.PhoneNumber}");
         }
     }
 }
