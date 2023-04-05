@@ -61,37 +61,53 @@ namespace SpargoTest
                     switch (choice)
                     {
                         case 1:
-                            var productConsole = new ProductConsole();
                             var productSubMenu = new ConsoleSubMenu { Title = ConsoleMenu.Products + ":", Items = menu.GetSubMenu("товар") };
+                            var productConsole = new ProductConsole();
+                            var products = storage.GetAll<Product>(out Result result);
 
-                            menu.Go(productSubMenu, storage, productConsole, out choice, out bool proceed);
+                            if (!result.Success)
+                                Console.WriteLine("Ошибка при получении продуктов");
+
+                            menu.Go(productSubMenu, products, productConsole, out choice, out bool proceed);
 
                             if (proceed)
                                 menu.Action(choice, storage, productConsole);
                             break;
                         case 2:
-                            var pharmacyConsole = new PharmacyConsole();
                             var pharmacySubMenu = new ConsoleSubMenu { Title = ConsoleMenu.Pharmacies + ":", Items = menu.GetSubMenu("аптеку") };
+                            var pharmacyConsole = new PharmacyConsole();
+                            var pharmacies = storage.GetAll<Pharmacy>(out result);
 
-                            menu.Go(pharmacySubMenu, storage, pharmacyConsole, out choice, out proceed);
+                            if (!result.Success)
+                                Console.WriteLine("Ошибка при получении аптек");
+
+                            menu.Go(pharmacySubMenu, pharmacies, pharmacyConsole, out choice, out proceed);
 
                             if (proceed)
                                 menu.Action(choice, storage, pharmacyConsole);
                             break;
                         case 3:
-                            var warehouseConsole = new WarehouseConsole();
                             var warehoseSubMenu = new ConsoleSubMenu { Title = ConsoleMenu.Warehouses + ":", Items = menu.GetSubMenu("склад") };
+                            var warehouseConsole = new WarehouseConsole();
+                            var warehouses = storage.GetAll<Warehouse>(out result);
 
-                            menu.Go(warehoseSubMenu, storage, warehouseConsole, out choice, out proceed);
+                            if (!result.Success)
+                                Console.WriteLine("Ошибка при получении складов");
+
+                            menu.Go(warehoseSubMenu, warehouses, warehouseConsole, out choice, out proceed);
                             
                             if (proceed)
                                 menu.Action(choice, storage, warehouseConsole);
                             break;
                         case 4:
-                            var consignmentConsole = new ConsignmentConsole();
                             var consignmentSubMenu = new ConsoleSubMenu { Title = ConsoleMenu.Consignments + ":", Items = menu.GetSubMenu("партию") };
+                            var consignmentConsole = new ConsignmentConsole();
+                            var consignments = storage.GetAll<Consignment>(out result);
 
-                            menu.Go(consignmentSubMenu, storage, consignmentConsole, out choice, out proceed);
+                            if (!result.Success)
+                                Console.WriteLine("Ошибка при получении складов");
+
+                            menu.Go(consignmentSubMenu, consignments, consignmentConsole, out choice, out proceed);
 
                             if (proceed)
                                 menu.Action(choice, storage, consignmentConsole);

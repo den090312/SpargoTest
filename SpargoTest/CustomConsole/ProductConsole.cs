@@ -26,15 +26,10 @@ namespace SpargoTest.CustomConsole
         /// Вывод продуктов на консоль
         /// </summary>
         /// <param name="crud">Интерфейс операций с продуктами</param>
-        public void Output(ICrud crud)
+        public void Output(IEnumerable<Product> products)
         {
-            var products = crud.GetMany<Product>(out Result readResult);
-
-            if (!readResult.Success)
-                Console.WriteLine($"Произошла ошибка при получении товаров: {readResult.ErrorMessage}");
-
             foreach (var product in products)
-                Console.WriteLine($"Id - {product.Id}, Name - {product.Name}");
+                Console.WriteLine($"'Id': {product.Id}, 'Name': {product.Name}");
         }
     }
 }

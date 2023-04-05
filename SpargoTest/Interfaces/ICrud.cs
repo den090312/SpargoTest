@@ -20,7 +20,7 @@
         /// <typeparam name="T">Тип получаемых объектов</typeparam>
         /// <param name="crudResult">Возможные ошибки при получении объектов</param>
         /// <returns>Перечень объектов</returns>
-        IEnumerable<T> GetMany<T>(out Result crudResult);
+        IEnumerable<T> GetAll<T>(out Result crudResult);
 
         /// <summary>
         /// Создать объект

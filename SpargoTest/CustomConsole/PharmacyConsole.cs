@@ -29,21 +29,16 @@ namespace SpargoTest.CustomConsole
         }
 
         /// <summary>
-        /// Вывод перечня аптек через консоль
+        /// Вывод перечня аптек на консоль
         /// </summary>
         /// <param name="crud">Интерфейс операций с аптеками</param>
-        public void Output(ICrud crud)
+        public void Output(IEnumerable<Pharmacy> pharmacies)
         {
-            var pharmacies = crud.GetMany<Pharmacy>(out Result readResult);
-
-            if (!readResult.Success)
-                Console.WriteLine($"Произошла ошибка при получении товаров: {readResult.ErrorMessage}");
-
             foreach (var pharmacy in pharmacies)
-                Console.WriteLine($"Id - {pharmacy.Id}" +
-                    $", PharmacyId - {pharmacy.Name}" +
-                    $", Name - {pharmacy.Address}" +
-                    $", PhoneNumber - {pharmacy.PhoneNumber}");
+                Console.WriteLine($"'Id' - {pharmacy.Id}" +
+                    $", 'PharmacyId': {pharmacy.Name}" +
+                    $", 'Name': {pharmacy.Address}" +
+                    $", 'PhoneNumber': {pharmacy.PhoneNumber}");
         }
     }
 }

@@ -45,15 +45,10 @@ namespace SpargoTest.CustomConsole
         /// Вывод перечня складов на консоль
         /// </summary>
         /// <param name="crud">Интерфейс операций со складами</param>
-        public void Output(ICrud crud)
+        public void Output(IEnumerable<Warehouse> warehouses)
         {
-            var warehouses = crud.GetMany<Warehouse>(out Result readResult);
-
-            if (!readResult.Success)
-                Console.WriteLine($"Произошла ошибка при получении товаров: {readResult.ErrorMessage}");
-
             foreach (var warehouse in warehouses)
-                Console.WriteLine($"Id - {warehouse.Id}, PharmacyId - {warehouse.PharmacyId}, Name - {warehouse.Name}");
+                Console.WriteLine($"'Id': {warehouse.Id}, 'PharmacyId': {warehouse.PharmacyId}, 'Name': {warehouse.Name}");
         }
     }
 }

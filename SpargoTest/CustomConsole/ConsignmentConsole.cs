@@ -52,20 +52,14 @@ namespace SpargoTest.CustomConsole
         }
 
         /// <summary>
-        /// Вывод объектов через консоль
+        /// Вывод объектов на консоль
         /// </summary>
-        /// <param name="crud">Интерфейс операций с партиями</param>
-        public void Output(ICrud crud)
+        public void Output(IEnumerable<Consignment> consignments)
         {
-            var consignments = crud.GetMany<Consignment>(out Result readResult);
-
-            if (!readResult.Success)
-                Console.WriteLine($"Произошла ошибка при получении товаров: {readResult.ErrorMessage}");
-
             foreach (var consignment in consignments)
-                Console.WriteLine($"Id - {consignment.Id}" +
-                    $", Name - {consignment.ProductId}" +
-                    $", Warehouse - {consignment.WarehouseId}");
+                Console.WriteLine($"'Id' - {consignment.Id}" +
+                    $", 'Name': {consignment.ProductId}" +
+                    $", 'Warehouse': {consignment.WarehouseId}");
         }
     }
 }

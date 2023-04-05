@@ -60,7 +60,7 @@ namespace SpargoTest
         /// <param name="obj">Читаемый объект</param>
         /// <param name="crudResult">Возможные ошибки при чтении объектов</param>
         /// <returns>Перечень читаемых объектов</returns>
-        public IEnumerable<T> GetMany<T>(out Result crudResult) 
+        public IEnumerable<T> GetAll<T>(out Result crudResult) 
             => _databaseProvider.GetAll<T>(out crudResult);
     }
 }

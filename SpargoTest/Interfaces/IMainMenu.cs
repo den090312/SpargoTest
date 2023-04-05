@@ -9,11 +9,11 @@
         /// Запуск пункта меню
         /// </summary>
         /// <param name="subMenu">Пункт подменю</param>
-        /// <param name="crud">Набор операций с объектами</param>
+        /// <param name="objects">Перечень объектов для подменю</param>
         /// <param name="io">Интерфейс ввода-вывода</param>
         /// <param name="choice">Выбор опции для действия</param>
         /// <param name="proceed">Вход в подпункт меню</param>
-        void Go<T>(ISubMenu subMenu, ICrud crud, IInputOutput<T> io, out int choice, out bool proceed);
+        void Go<T>(ISubMenu subMenu, IEnumerable<T> objects, IInputOutput<T> io, out int choice, out bool proceed);
 
         /// <summary>
         /// Действие в меню

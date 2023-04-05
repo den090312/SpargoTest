@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using SpargoTest.Models;
+
 namespace SpargoTest.Interfaces
 {
     /// <summary>
@@ -13,7 +15,7 @@ namespace SpargoTest.Interfaces
     public interface IInputOutput<T>
     {
         /// <summary>
-        /// Получение объекта по входным данным
+        /// Ввод объекта
         /// </summary>
         /// <returns>Получаемый объект</returns>
         T Input();
@@ -21,7 +23,6 @@ namespace SpargoTest.Interfaces
         /// <summary>
         /// Вывод объектов
         /// </summary>
-        /// <param name="crud">Набор операций с объектами</param>
-        void Output(ICrud crud);
+        void Output(IEnumerable<T> objects);
     }
 }

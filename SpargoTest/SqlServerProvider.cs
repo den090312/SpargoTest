@@ -55,14 +55,10 @@ namespace SpargoTest
         public void Add<T>(T obj, out Result crudResult)
         {
             var type = typeof(T);
-
             var properties = type.GetProperties().Where(p => p.Name != "Id");
-
             var fieldNames = properties.Select(p => p.Name);
             var parameterNames = fieldNames.Select(f => "@" + f);
-
             var commandText = $"INSERT INTO {type.Name} ({string.Join(", ", fieldNames)}) VALUES ({string.Join(", ", parameterNames)})";
-
             var parameters = new List<SqlParameter>();
 
             foreach (var property in properties)
@@ -77,7 +73,16 @@ namespace SpargoTest
                 using var command = new SqlCommand(commandText, connection);
                 command.Parameters.AddRange(parameters.ToArray());
 
-                rowsAffected = command.ExecuteNonQuery();
+                try
+                {
+                    rowsAffected = command.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    crudResult = new Result(CrudOperation.Create, ex.Message);
+
+                    return;
+                }
             }
 
             if (rowsAffected > 0)
@@ -95,77 +100,121 @@ namespace SpargoTest
         /// <returns>Получаемый объект</returns>
         public T? Get<T>(int Id, out Result crudResult)
         {
-            using var connection = new SqlConnection(_connectionString);
-            connection.Open();
+            var data = new Dictionary<string, object>();
 
-            using var command = new SqlCommand($"SELECT * FROM {typeof(T).Name} WHERE Id = @id", connection);
-            command.Parameters.AddWithValue("@id", Id);
-
-            using var reader = command.ExecuteReader();
-
-            if (reader.Read())
+            using (var connection = new SqlConnection(_connectionString))
             {
-                var item = Activator.CreateInstance<T>();
+                connection.Open();
 
-                foreach (var property in typeof(T).GetProperties())
+                using var command = new SqlCommand($"SELECT * FROM {typeof(T).Name} WHERE Id = @id", connection);
+                
+                command.Parameters.AddWithValue("@id", Id);
+                
+                try
                 {
-                    var value = reader[property.Name];
+                    using var reader = command.ExecuteReader();
 
-                    if (value != DBNull.Value)
-                        property.SetValue(item, value);
+                    if (reader.Read())
+                    {
+                        for (int i = 0; i < reader.FieldCount; i++)
+                            data.Add(reader.GetName(i), reader.GetValue(i));
+                    }
+                    else
+                    {
+                        crudResult = new Result(CrudOperation.Read, "Объект не найден в БД");
+
+                        return default;
+                    }
                 }
+                catch (Exception ex)
+                {
+                    crudResult = new Result(CrudOperation.Read, ex.Message);
 
-                crudResult = new Result(CrudOperation.Read);
-
-                return item;
+                    return default;
+                }
             }
 
-            crudResult = new Result(CrudOperation.Read, "Объект не найден в БД");
+            var item = Activator.CreateInstance<T>();
+            
+            foreach (var property in typeof(T).GetProperties())
+            {
+                if (data.ContainsKey(property.Name) && data[property.Name] != DBNull.Value)
+                    property.SetValue(item, data[property.Name]);
+            }
 
-            return default;
+            crudResult = new Result(CrudOperation.Read);
+            
+            return item;
         }
 
         /// <summary>
         /// Получить перечень всех объектов из базы данных SQL Server
         /// </summary>
         /// <typeparam name="T">Тип получаемых объектов</typeparam>
-        /// <param name="crudResult">Возможные ошибки при получении объектов</param>
+        /// <param name="result">Возможные ошибки при получении объектов</param>
         /// <returns>Перечень объектов</returns>
-        public IEnumerable<T> GetAll<T>(out Result crudResult)
+        public IEnumerable<T> GetAll<T>(out Result result)
         {
-            var result = new List<T>();
-            
-            using var connection = new SqlConnection(_connectionString);
-            connection.Open();
-            
-            using var command = new SqlCommand($"SELECT * FROM {typeof(T).Name}", connection);
-            using var reader = command.ExecuteReader();
-            
-            while (reader.Read())
+            var data = new List<Dictionary<string, object>>();
+
+            using (var connection = new SqlConnection(_connectionString))
             {
-                var item = Activator.CreateInstance<T>();
-
-                foreach (var property in typeof(T).GetProperties())
+                connection.Open();
+                using var command = new SqlCommand($"SELECT * FROM {typeof(T).Name}", connection);
+                
+                try
                 {
-                    var value = reader[property.Name];
+                    using var reader = command.ExecuteReader();
 
-                    if (value != DBNull.Value)
-                        property.SetValue(item, value);
+                    while (reader.Read())
+                    {
+                        var rowData = new Dictionary<string, object>();
+
+                        for (int i = 0; i < reader.FieldCount; i++)
+                            rowData.Add(reader.GetName(i), reader.GetValue(i));
+                        
+                        data.Add(rowData);
+                    }
                 }
+                catch (Exception ex)
+                {
+                    result = new Result(CrudOperation.Read, ex.Message);
 
-                result.Add(item);
+                    return Enumerable.Empty<T>();
+                }
             }
 
-            crudResult = new Result(CrudOperation.Read);
+            var objects = new List<T>();
             
-            return result;
+            foreach (var itemData in data)
+            {
+                var item = Activator.CreateInstance<T>();
+                
+                foreach (var property in typeof(T).GetProperties())
+                {
+                    if (itemData.ContainsKey(property.Name) && itemData[property.Name] != DBNull.Value)
+                        property.SetValue(item, itemData[property.Name]);
+                }
+
+                objects.Add(item);
+            }
+
+            result = new Result(CrudOperation.Read);
+            
+            return objects;
         }
 
-        public void Remove<T>(int Id, out Result crudResult)
+        /// <summary>
+        /// Удаление объекта из базы данных SQL Server
+        /// </summary>
+        /// <typeparam name="T">Тип удаляемого объекта</typeparam>
+        /// <param name="Id">Идентификатор удаляемого объекта</param>
+        /// <param name="result">Результат удаления</param>
+        public void Remove<T>(int Id, out Result result)
         {
             if (Id == default)
             {
-                crudResult = new Result(CrudOperation.Delete, "Некорректное значение идентификатора");
+                result = new Result(CrudOperation.Delete, "Некорректное значение идентификатора");
                 
                 return;
             }
@@ -177,17 +226,26 @@ namespace SpargoTest
             using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
-                
+
                 using var command = new SqlCommand(commandText, connection);
                 command.Parameters.Add(new SqlParameter("@Id", Id));
                 
-                rowsAffected = command.ExecuteNonQuery();
+                try
+                {
+                    rowsAffected = command.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    result = new Result(CrudOperation.Delete, ex.Message);
+
+                    return;
+                }
             }
 
             if (rowsAffected > 0)
-                crudResult = new Result(CrudOperation.Delete);
+                result = new Result(CrudOperation.Delete);
             else
-                crudResult = new Result(CrudOperation.Delete, "Ошибка при удалении объекта из базы данных");
+                result = new Result(CrudOperation.Delete, "Ошибка при удалении объекта из базы данных");
         }
 
         /// <summary>

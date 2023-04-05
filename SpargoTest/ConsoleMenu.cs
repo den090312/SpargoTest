@@ -29,10 +29,10 @@ namespace SpargoTest
         /// Запуск пункта меню
         /// </summary>
         /// <param name="subMenu">Пункт подменю</param>
-        /// <param name="crud">Набор операций с объектами</param>
+        /// <param name="objects">Перечень объектов для подменю</param>
         /// <param name="io">Интерфейс ввода-вывода</param>
         /// <param name="choice">Выбор опции для действия</param>
-        public void Go<T>(ISubMenu subMenu, ICrud crud, IInputOutput<T> io, out int choice, out bool proceed)
+        public void Go<T>(ISubMenu subMenu, IEnumerable<T> objects, IInputOutput<T> io, out int choice, out bool proceed)
         {
             choice = 0;
             proceed = false;
@@ -43,7 +43,7 @@ namespace SpargoTest
             {
                 Console.WriteLine(subMenu.Title);
 
-                io.Output(crud);
+                io.Output(objects);
 
                 var i = 1;
 
