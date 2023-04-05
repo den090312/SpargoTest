@@ -12,26 +12,15 @@ namespace SpargoTest.CustomConsole
     /// <summary>
     /// Консольный функционал для складов
     /// </summary>
-    public class WarehouseConsole : IConsole<Warehouse>
+    public class WarehouseConsole : IInputOutput<Warehouse>
     {
         /// <summary>
         /// Создание склада через консоль
         /// </summary>
         /// <returns></returns>
-        public Warehouse Get()
+        public Warehouse Input()
         {
             var warehouse = new Warehouse();
-
-            Console.WriteLine("Введите идентификатор склада:");
-
-            var id = 0;
-
-            while (!int.TryParse(Console.ReadLine(), out id))
-            {
-                Console.WriteLine("Неверный формат идентификатора склада. Пожалуйста, введите целое число.");
-            }
-            
-            warehouse.Id = id;
 
             var pharmacyId = 0;
 
@@ -41,6 +30,8 @@ namespace SpargoTest.CustomConsole
             {
                 Console.WriteLine("Неверный формат идентификатора аптеки. Пожалуйста, введите целое число.");
             }
+
+            //ToDo: проверить существование аптеки по этому идентификатору
             
             warehouse.PharmacyId = pharmacyId;
 
@@ -48,6 +39,17 @@ namespace SpargoTest.CustomConsole
             warehouse.Name = Console.ReadLine();
 
             return warehouse;
+        }
+
+        public void Output(ICrud crud)
+        {
+            var warehouses = crud.GetMany<Warehouse>(out CrudResult readResult);
+
+            if (!readResult.Success)
+                Console.WriteLine($"Произошла ошибка при получении товаров: {readResult.ErrorMessage}");
+
+            foreach (var warehouse in warehouses)
+                Console.WriteLine($"Id - {warehouse.Id}, PharmacyId - {warehouse.PharmacyId}, Name - {warehouse.Name}");
         }
     }
 }

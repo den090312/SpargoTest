@@ -6,13 +6,13 @@ namespace SpargoTest.CustomConsole
     /// <summary>
     /// Консольный функционал для продуктов
     /// </summary>
-    public class ProductConsole : IConsole<Product>
+    public class ProductConsole : IInputOutput<Product>
     {
         /// <summary>
         /// Создание продукта через консоль
         /// </summary>
         /// <returns>Продукт</returns>
-        public Product Get()
+        public Product Input()
         {
             var prodcut = new Product();
 
@@ -20,6 +20,21 @@ namespace SpargoTest.CustomConsole
             prodcut.Name = Console.ReadLine();
 
             return prodcut;
+        }
+
+        /// <summary>
+        /// Вывод продуктов на консоль
+        /// </summary>
+        /// <param name="crud">Хранилище</param>
+        public void Output(ICrud crud)
+        {
+            var products = crud.GetMany<Product>(out CrudResult readResult);
+
+            if (!readResult.Success)
+                Console.WriteLine($"Произошла ошибка при получении товаров: {readResult.ErrorMessage}");
+
+            foreach (var product in products)
+                Console.WriteLine($"Id - {product.Id}, Name - {product.Name}");
         }
     }
 }

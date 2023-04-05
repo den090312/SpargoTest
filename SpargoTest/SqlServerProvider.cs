@@ -12,12 +12,12 @@ namespace SpargoTest
     public class SqlServerProvider : IDatabaseProvider
     {
         /// <summary>
-        /// Строка подключения к базе данных SQLite
+        /// Строка подключения к базе данных SQL Server
         /// </summary>
         private readonly string _connectionString = "Server=(localdb)\\mssqllocaldb;Database=SpargoTest;Trusted_Connection=True;";
 
         /// <summary>
-        /// Конструктор провайдера базы данных SQLite
+        /// Конструктор провайдера базы данных SQL Server
         /// </summary>
         /// <param name="createTables">Создание таблиц</param>
         public SqlServerProvider(bool createTables = false)
@@ -43,7 +43,7 @@ namespace SpargoTest
         }
 
         /// <summary>
-        /// Записать объект в базу данных SQLite
+        /// Записать объект в базу данных SQL Server
         /// </summary>
         /// <typeparam name="T">Тип записываемого объекта</typeparam>
         /// <param name="obj">Объект для записи</param>
@@ -52,7 +52,7 @@ namespace SpargoTest
         {
             var type = typeof(T);
 
-            var properties = type.GetProperties();
+            var properties = type.GetProperties().Where(p => p.Name != "Id");
 
             var fieldNames = properties.Select(p => p.Name);
             var parameterNames = fieldNames.Select(f => "@" + f);
@@ -69,7 +69,7 @@ namespace SpargoTest
             using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
-                
+
                 using var command = new SqlCommand(commandText, connection);
                 command.Parameters.AddRange(parameters.ToArray());
 
@@ -83,7 +83,46 @@ namespace SpargoTest
         }
 
         /// <summary>
-        /// Получить перечень всех объектов из базы данных SQLite
+        /// Получение объекта из базы данных SQL Server
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="Id">Идентификатор объекта</param>
+        /// <param name="crudResult"></param>
+        /// <returns>Получаемый объект</returns>
+        public T? Get<T>(int Id, out CrudResult crudResult)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            connection.Open();
+
+            using var command = new SqlCommand($"SELECT * FROM {typeof(T).Name} WHERE Id = @id", connection);
+            command.Parameters.AddWithValue("@id", Id);
+
+            using var reader = command.ExecuteReader();
+
+            if (reader.Read())
+            {
+                var item = Activator.CreateInstance<T>();
+
+                foreach (var property in typeof(T).GetProperties())
+                {
+                    var value = reader[property.Name];
+
+                    if (value != DBNull.Value)
+                        property.SetValue(item, value);
+                }
+
+                crudResult = new CrudResult(CrudOperation.Read);
+
+                return item;
+            }
+
+            crudResult = new CrudResult(CrudOperation.Read, "Объект не найден в БД");
+
+            return default;
+        }
+
+        /// <summary>
+        /// Получить перечень всех объектов из базы данных SQL Server
         /// </summary>
         /// <typeparam name="T">Тип получаемых объектов</typeparam>
         /// <param name="crudResult">Возможные ошибки при получении объектов</param>
@@ -162,9 +201,13 @@ namespace SpargoTest
             foreach (var modelFile in modelFiles)
             {
                 var className = Path.GetFileNameWithoutExtension(modelFile);
+
+                if (DatabaseExists(className))
+                    continue;
+
                 var classType = assembly
                     .GetTypes()
-                    .FirstOrDefault(t => t.FullName != null 
+                    .FirstOrDefault(t => t.FullName != null
                         && t.FullName.Contains($"{Program.ModelsFolderName}.{className}"));
 
                 if (classType == default)
@@ -177,20 +220,35 @@ namespace SpargoTest
                     var columnName = property.Name;
                     var columnType = GetSqlType(property.PropertyType);
 
-                    createTablesQuery.AppendLine($"{columnName} {columnType},");
+                    if (columnName == "Id")
+                        createTablesQuery.AppendLine($"{columnName} {columnType} IDENTITY(1,1) PRIMARY KEY,");
+                    else
+                        createTablesQuery.AppendLine($"{columnName} {columnType},");
                 }
 
                 createTablesQuery.Length -= 3;
                 createTablesQuery.AppendLine(");");
             }
 
+            if (createTablesQuery.Length == 0)
+                return;
+
             using var connection = new SqlConnection(_connectionString);
             connection.Open();
 
-            var str = createTablesQuery.ToString();
-
-            using var command = new SqlCommand(str, connection);
+            using var command = new SqlCommand(createTablesQuery.ToString(), connection);
             command.ExecuteNonQuery();
+        }
+
+        private bool DatabaseExists(string tableName)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            connection.Open();
+
+            using var command = new SqlCommand($"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{tableName}'", connection);
+            var result = (int)command.ExecuteScalar();
+
+            return result > 0 ? true : false;
         }
 
         private string GetSqlType(Type type)

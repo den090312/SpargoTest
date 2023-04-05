@@ -17,6 +17,11 @@
     public class CrudResult
     {
         /// <summary>
+        /// Индикатор успешной операции
+        /// </summary>
+        public bool Success => ErrorMessage == default;
+
+        /// <summary>
         /// Тип операции
         /// </summary>
         public CrudOperation Operation { get; set; }

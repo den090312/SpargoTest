@@ -11,7 +11,22 @@
         /// <returns>Индикатор успешного соединения</returns>
         bool ConnectionIsOk();
 
+        /// <summary>
+        /// Добавить объект в базу данных
+        /// </summary>
+        /// <typeparam name="T">Тип добавляемого объекта</typeparam>
+        /// <param name="obj">Добавляемый объект</param>
+        /// <param name="crudResult">Возможные ошибки при добавлении объекта</param>
         void Add<T>(T obj, out CrudResult crudResult);
+
+        /// <summary>
+        /// Получение объекта из базы данных
+        /// </summary>
+        /// <typeparam name="T">Тип получаемого объекта</typeparam>
+        /// <param name="Id">Идентификатор объекта</param>
+        /// <param name="crudResult">Возможные ошибки при получении объекта</param>
+        /// <returns>Получаемый объект</returns>
+        T? Get<T>(int Id, out CrudResult crudResult);
 
         /// <summary>
         /// Получение всех объектов типа Т из базы данных

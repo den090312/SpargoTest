@@ -40,8 +40,18 @@ namespace SpargoTest
         /// <typeparam name="T">Тип удаляемого объекта</typeparam>
         /// <param name="Id">Идентификатор удаляемого объекта</param>
         /// <param name="crudResult">Возможные ошибки при удалении объектов</param>
-        public void Delete<T>(int Id, out CrudResult crudResult) 
+        public void Remove<T>(int Id, out CrudResult crudResult) 
             => _databaseProvider.Remove<T>(Id, out crudResult);
+
+        /// <summary>
+        /// Чтение объекта из хранилища
+        /// </summary>
+        /// <typeparam name="T">Тип читаемого объекта</typeparam>
+        /// <param name="Id">Идентификатор читаемого объекта</param>
+        /// <param name="crudResult">Возможные ошибки при чтении объекта</param>
+        /// <returns>Читаемый объект</returns>
+        public T? Get<T>(int Id, out CrudResult crudResult) 
+            => _databaseProvider.Get<T>(Id, out crudResult);
 
         /// <summary>
         /// Чтение объектов из хранилища
@@ -49,8 +59,8 @@ namespace SpargoTest
         /// <typeparam name="T">Тип читаемыех объектов</typeparam>
         /// <param name="obj">Читаемый объект</param>
         /// <param name="crudResult">Возможные ошибки при чтении объектов</param>
-        /// <returns></returns>
-        public IEnumerable<T> Read<T>(out CrudResult crudResult) 
+        /// <returns>Перечень читаемых объектов</returns>
+        public IEnumerable<T> GetMany<T>(out CrudResult crudResult) 
             => _databaseProvider.GetAll<T>(out crudResult);
     }
 }

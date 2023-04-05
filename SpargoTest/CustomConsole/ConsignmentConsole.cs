@@ -12,26 +12,15 @@ namespace SpargoTest.CustomConsole
     /// <summary>
     /// Консольный функционал для партий товара
     /// </summary>
-    public class ConsignmentConsole : IConsole<Consignment>
+    public class ConsignmentConsole : IInputOutput<Consignment>
     {
         /// <summary>
         /// Создание партии через консоль
         /// </summary>
         /// <returns>Партия товара</returns>
-        public Consignment Get()
+        public Consignment Input()
         {
             var consignment = new Consignment();
-
-            Console.WriteLine("Введите идентификатор партии:");
-
-            var id = 0;
-
-            while (!int.TryParse(Console.ReadLine(), out id))
-            {
-                Console.WriteLine("Неверный формат идентификатора партии. Пожалуйста, введите целое число.");
-            }
-
-            consignment.Id = id;
 
             var productId = 0;
 
@@ -41,6 +30,8 @@ namespace SpargoTest.CustomConsole
             {
                 Console.WriteLine("Неверный формат идентификатора продукта. Пожалуйста, введите целое число.");
             }
+
+            //ToDo: проверить существование продукта по этому идентификатору
 
             consignment.ProductId = productId;
 
@@ -53,9 +44,28 @@ namespace SpargoTest.CustomConsole
                 Console.WriteLine("Неверный формат идентификатора склада. Пожалуйста, введите целое число.");
             }
 
+            //ToDo: проверить существование склада по этому идентификатору
+
             consignment.WarehouseId = warehouseId;
 
             return consignment;
+        }
+
+        /// <summary>
+        /// Вывод объектов через консоль
+        /// </summary>
+        /// <param name="crud">Набор операций с объектами</param>
+        public void Output(ICrud crud)
+        {
+            var consignments = crud.GetMany<Consignment>(out CrudResult readResult);
+
+            if (!readResult.Success)
+                Console.WriteLine($"Произошла ошибка при получении товаров: {readResult.ErrorMessage}");
+
+            foreach (var consignment in consignments)
+                Console.WriteLine($"Id - {consignment.Id}" +
+                    $", Name - {consignment.ProductId}" +
+                    $", Warehouse - {consignment.WarehouseId}");
         }
     }
 }

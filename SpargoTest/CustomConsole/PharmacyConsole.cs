@@ -6,13 +6,13 @@ namespace SpargoTest.CustomConsole
     /// <summary>
     /// Консольный функционал для аптек
     /// </summary>
-    public class PharmacyConsole : IConsole<Pharmacy>
+    public class PharmacyConsole : IInputOutput<Pharmacy>
     {
         /// <summary>
         /// Создание аптеки через консоль
         /// </summary>
         /// <returns>Аптека</returns>
-        public Pharmacy Get()
+        public Pharmacy Input()
         {
             var pharmacy = new Pharmacy();
 
@@ -26,6 +26,20 @@ namespace SpargoTest.CustomConsole
             pharmacy.PhoneNumber = Console.ReadLine();
 
             return pharmacy;
+        }
+
+        public void Output(ICrud crud)
+        {
+            var pharmacies = crud.GetMany<Pharmacy>(out CrudResult readResult);
+
+            if (!readResult.Success)
+                Console.WriteLine($"Произошла ошибка при получении товаров: {readResult.ErrorMessage}");
+
+            foreach (var pharmacy in pharmacies)
+                Console.WriteLine($"Id - {pharmacy.Id}" +
+                    $", PharmacyId - {pharmacy.Name}" +
+                    $", Name - {pharmacy.Address}" +
+                    $", PhoneNumber - {pharmacy.PhoneNumber}");
         }
     }
 }
