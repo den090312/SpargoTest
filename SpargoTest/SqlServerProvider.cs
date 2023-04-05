@@ -281,7 +281,7 @@ namespace SpargoTest
                 foreach (var property in classType.GetProperties())
                 {
                     var columnName = property.Name;
-                    var columnType = GetSqlType(property.PropertyType);
+                    var columnType = GetSqlServerType(property.PropertyType);
 
                     if (columnName == "Id")
                         createTablesQuery.AppendLine($"{columnName} {columnType} IDENTITY(1,1) PRIMARY KEY,");
@@ -330,7 +330,7 @@ namespace SpargoTest
             return result > 0 ? true : false;
         }
 
-        private string GetSqlType(Type type)
+        private string GetSqlServerType(Type type)
         {
             var typeCode = Type.GetTypeCode(type);
 
