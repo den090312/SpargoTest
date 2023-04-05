@@ -8,47 +8,67 @@ using SpargoTest.Services;
 namespace SpargoTest.Repository
 {
     /// <summary>
-    /// Провайдер базы данных SQL Server
+    /// Провайдер базы данных SQL Server Express
     /// </summary>
-    public class SqlServerProvider : IDatabaseProvider
+    public class SqlExpressProvider : IDatabaseProvider
     {
         /// <summary>
-        /// Строка подключения к базе данных SQL Server
+        /// Строка подключения к серверу
         /// </summary>
-        private readonly string _connectionString = "Server=(localdb)\\mssqllocaldb;Database=SpargoTest;Trusted_Connection=True;";
+        private string _serverConnectionString = "Server=(localdb)\\mssqllocaldb;Trusted_Connection=True;";
+        
+        /// <summary>
+        /// Имя базы данных
+        /// </summary>
+        private string _databaseName = "SpargoTest";
 
         /// <summary>
-        /// Конструктор провайдера базы данных SQL Server
+        /// Строка подключения к базе данных SQL Server Express
         /// </summary>
+        public string DatabaseConnectionString => $"{_serverConnectionString}Database=SpargoTest;";
+
+        /// <summary>
+        /// Полное имя файла базы данных
+        /// </summary>
+        public string DatabaseFileName => Path.Combine(Tools.BaseDirectory(), _databaseName + ".mdf");
+
+        /// <summary>
+        /// Полное имя лога базы данных
+        /// </summary>
+        public string LogFileName => Path.ChangeExtension($"{DatabaseFileName}_log", ".ldf");
+
+        /// <summary>
+        /// Конструктор провайдера базы данных SQL Server Express
+        /// </summary>
+        /// <param name="createTables">Создание базы данных</param>
         /// <param name="createTables">Создание таблиц</param>
-        public SqlServerProvider(bool createTables = false)
+        public SqlExpressProvider()
         {
-            if (createTables)
-                CreateTables();
+            if (!ServerOnline())
+            {
+                Console.WriteLine("Не удалось соединиться с сервером");
+
+                return;
+            }
         }
 
         /// <summary>
-        /// Тест подключения к базе
+        /// Инициализация базы данных SQL Server Express
+        /// </summary>
+        public void Initialize()
+        {
+            CreateDatabase();
+            CreateTables();
+        }
+
+        /// <summary>
+        /// Тест подключения к серверу
         /// </summary>
         /// <returns>Результат теста поключения</returns>
-        public bool ConnectionIsOk()
-        {
-            using var connection = new SqlConnection(_connectionString);
-
-            try
-            {
-                connection.Open();
-
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+        public bool ServerOnline() => new SqlConnection(_serverConnectionString).TryOpen();
 
         /// <summary>
-        /// Записать объект в базу данных SQL Server
+        /// Записать объект в базу данных SQL Server Express
         /// </summary>
         /// <typeparam name="T">Тип записываемого объекта</typeparam>
         /// <param name="obj">Объект для записи</param>
@@ -67,7 +87,7 @@ namespace SpargoTest.Repository
 
             var rowsAffected = 0;
 
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new SqlConnection(DatabaseConnectionString))
             {
                 connection.Open();
 
@@ -93,7 +113,7 @@ namespace SpargoTest.Repository
         }
 
         /// <summary>
-        /// Получение объекта из базы данных SQL Server
+        /// Получение объекта из базы данных SQL Server Express
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="Id">Идентификатор объекта</param>
@@ -103,7 +123,7 @@ namespace SpargoTest.Repository
         {
             var data = new Dictionary<string, object>();
 
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new SqlConnection(DatabaseConnectionString))
             {
                 connection.Open();
 
@@ -149,7 +169,7 @@ namespace SpargoTest.Repository
         }
 
         /// <summary>
-        /// Получить перечень всех объектов из базы данных SQL Server
+        /// Получить перечень всех объектов из базы данных SQL Server Express
         /// </summary>
         /// <typeparam name="T">Тип получаемых объектов</typeparam>
         /// <param name="result">Возможные ошибки при получении объектов</param>
@@ -158,7 +178,7 @@ namespace SpargoTest.Repository
         {
             var data = new List<Dictionary<string, object>>();
 
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new SqlConnection(DatabaseConnectionString))
             {
                 connection.Open();
                 using var command = new SqlCommand($"SELECT * FROM {typeof(T).Name}", connection);
@@ -206,7 +226,7 @@ namespace SpargoTest.Repository
         }
 
         /// <summary>
-        /// Удаление объекта из базы данных SQL Server
+        /// Удаление объекта из базы данных SQL Server Express
         /// </summary>
         /// <typeparam name="T">Тип удаляемого объекта</typeparam>
         /// <param name="Id">Идентификатор удаляемого объекта</param>
@@ -224,7 +244,7 @@ namespace SpargoTest.Repository
 
             var rowsAffected = 0;
 
-            using (var connection = new SqlConnection(_connectionString))
+            using (var connection = new SqlConnection(DatabaseConnectionString))
             {
                 connection.Open();
 
@@ -250,6 +270,35 @@ namespace SpargoTest.Repository
         }
 
         /// <summary>
+        /// Создание базы данных SQL Server Express
+        /// </summary>
+        private void CreateDatabase()
+        {
+            if (File.Exists(DatabaseFileName))
+                File.Delete(DatabaseFileName);
+
+            if (File.Exists(LogFileName))
+                File.Delete(LogFileName);
+
+            using var connection = new SqlConnection(_serverConnectionString);
+            connection.Open();
+
+            using (var command = new SqlCommand($"SELECT COUNT(*) FROM sys.databases WHERE name = '{_databaseName}'", connection))
+            {
+                if ((int)command.ExecuteScalar() > 0)
+                {
+                    using var dropCommand = new SqlCommand($"DROP DATABASE {_databaseName}", connection);
+                    dropCommand.ExecuteNonQuery();
+                }
+            }
+
+            var commandText = $"CREATE DATABASE {_databaseName} ON PRIMARY " +
+                $"(NAME={_databaseName}, FILENAME='{DatabaseFileName}')";
+            var createCommand = new SqlCommand(commandText, connection);
+            createCommand.ExecuteNonQuery();      
+        }
+
+        /// <summary>
         /// Создание таблиц БД, соотв. моделям из папки Program.ModelsFolderName
         /// </summary>
         private void CreateTables()
@@ -266,7 +315,7 @@ namespace SpargoTest.Repository
             {
                 var className = Path.GetFileNameWithoutExtension(modelFile);
 
-                if (DatabaseExists(className))
+                if (TableExists(className))
                     continue;
 
                 var classType = assembly
@@ -280,25 +329,7 @@ namespace SpargoTest.Repository
                 createTablesQuery.AppendLine($"CREATE TABLE {className} (");
 
                 foreach (var property in classType.GetProperties())
-                {
-                    var columnName = property.Name;
-                    var columnType = GetSqlServerType(property.PropertyType);
-
-                    if (columnName == "Id")
-                        createTablesQuery.AppendLine($"{columnName} {columnType} IDENTITY(1,1) PRIMARY KEY,");
-                    else
-                        createTablesQuery.AppendLine($"{columnName} {columnType},");
-
-                    if (columnName.EndsWith("Id") && columnName != "Id")
-                    {
-                        var referencedTableName = columnName.Substring(0, columnName.Length - 2);
-                        foreignKeysQuery.AppendLine($"ALTER TABLE {className} " +
-                            $"ADD CONSTRAINT FK_{className}_{referencedTableName} " +
-                            $"FOREIGN KEY ({columnName}) " +
-                            $"REFERENCES {referencedTableName}(Id) " +
-                            $"ON DELETE CASCADE;");
-                    }
-                }
+                    SetForeignKeys(createTablesQuery, foreignKeysQuery, className, property);
 
                 createTablesQuery.Length -= 3;
                 createTablesQuery.AppendLine(");");
@@ -307,11 +338,23 @@ namespace SpargoTest.Repository
             if (createTablesQuery.Length == 0)
                 return;
 
-            using var connection = new SqlConnection(_connectionString);
+            ExecuteTablesCreation(createTablesQuery, foreignKeysQuery);
+        }
+
+        /// <summary>
+        /// Запуск создания таблиц
+        /// </summary>
+        /// <param name="createTablesQuery">Код создания таблиц</param>
+        /// <param name="foreignKeysQuery">Код создания внешних ключей</param>
+        private void ExecuteTablesCreation(StringBuilder createTablesQuery, StringBuilder foreignKeysQuery)
+        {
+            var connection = new SqlConnection(DatabaseConnectionString);
             connection.Open();
 
-            using var command = new SqlCommand(createTablesQuery.ToString(), connection);
-            command.ExecuteNonQuery();
+            using (var command = new SqlCommand(createTablesQuery.ToString(), connection))
+            {
+                command.ExecuteNonQuery();
+            }
 
             if (foreignKeysQuery.Length > 0)
             {
@@ -320,9 +363,42 @@ namespace SpargoTest.Repository
             }
         }
 
-        private bool DatabaseExists(string tableName)
+        /// <summary>
+        /// Установка внешних ключей
+        /// </summary>
+        /// <param name="createTablesQuery">Код создания таблиц</param>
+        /// <param name="foreignKeysQuery">Код создания внешних ключей</param>
+        /// <param name="className">Имя модели для маппинга в БД</param>
+        /// <param name="property">Свойство модели для маппинга в БД</param>
+        private void SetForeignKeys(StringBuilder createTablesQuery, StringBuilder foreignKeysQuery, string className, PropertyInfo property)
         {
-            using var connection = new SqlConnection(_connectionString);
+            var columnName = property.Name;
+            var columnType = GetSqlServerType(property.PropertyType);
+
+            if (columnName == "Id")
+                createTablesQuery.AppendLine($"{columnName} {columnType} IDENTITY(1,1) PRIMARY KEY,");
+            else
+                createTablesQuery.AppendLine($"{columnName} {columnType},");
+
+            if (columnName.EndsWith("Id") && columnName != "Id")
+            {
+                var referencedTableName = columnName.Substring(0, columnName.Length - 2);
+                foreignKeysQuery.AppendLine($"ALTER TABLE {className} " +
+                    $"ADD CONSTRAINT FK_{className}_{referencedTableName} " +
+                    $"FOREIGN KEY ({columnName}) " +
+                    $"REFERENCES {referencedTableName}(Id) " +
+                    $"ON DELETE CASCADE;");
+            }
+        }
+
+        /// <summary>
+        /// Проверка существования таблицы в БД
+        /// </summary>
+        /// <param name="tableName">Имя таблицы</param>
+        /// <returns></returns>
+        private bool TableExists(string tableName)
+        {
+            using var connection = new SqlConnection(DatabaseConnectionString);
             connection.Open();
 
             using var command = new SqlCommand($"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{tableName}'", connection);
@@ -331,52 +407,78 @@ namespace SpargoTest.Repository
             return result > 0 ? true : false;
         }
 
+        /// <summary>
+        /// Преобразование типов .NET в SQL Server
+        /// </summary>
+        /// <param name="type">Тип .NET</param>
+        /// <returns>Тип SQL Server</returns>
         private string GetSqlServerType(Type type)
         {
-            var typeCode = Type.GetTypeCode(type);
+            var underlyingType = Nullable.GetUnderlyingType(type);
+            
+            string sqlType;
 
-            switch (typeCode)
+            switch (Type.GetTypeCode(underlyingType ?? type))
             {
                 case TypeCode.Boolean:
-                    return "BIT";
+                    sqlType = "BIT";
+                    break;
                 case TypeCode.Byte:
-                    return "TINYINT";
+                    sqlType = "TINYINT";
+                    break;
                 case TypeCode.Char:
-                    return "NCHAR(1)";
+                    sqlType = "NCHAR(1)";
+                    break;
                 case TypeCode.Int16:
-                    return "SMALLINT";
+                    sqlType = "SMALLINT";
+                    break;
                 case TypeCode.Int32:
-                    return "INT";
+                    sqlType = "INT";
+                    break;
                 case TypeCode.Int64:
-                    return "BIGINT";
+                    sqlType = "BIGINT";
+                    break;
                 case TypeCode.SByte:
-                    return "SMALLINT";
+                    sqlType = "SMALLINT";
+                    break;
                 case TypeCode.UInt16:
-                    return "INT";
+                    sqlType = "INT";
+                    break;
                 case TypeCode.UInt32:
-                    return "BIGINT";
+                    sqlType = "BIGINT";
+                    break;
                 case TypeCode.UInt64:
-                    return "DECIMAL(20)";
+                    sqlType = "DECIMAL(20)";
+                    break;
                 case TypeCode.Single:
-                    return "REAL";
+                    sqlType = "REAL";
+                    break;
                 case TypeCode.Double:
-                    return "FLOAT";
+                    sqlType = "FLOAT";
+                    break;
                 case TypeCode.Decimal:
-                    return "DECIMAL(18, 0)";
+                    sqlType = "DECIMAL(18, 0)";
+                    break;
                 case TypeCode.DateTime:
-                    return "DATETIME2";
+                    sqlType = "DATETIME2";
+                    break;
                 case TypeCode.String:
-                    return "NVARCHAR(MAX)";
+                    sqlType = "NVARCHAR(MAX)";
+                    break;
                 default:
                     if (type == typeof(byte[]))
-                        return "VARBINARY(MAX)";
-                    if (type == typeof(Guid))
-                        return "UNIQUEIDENTIFIER";
-                    if (type.IsEnum)
-                        return "INT";
+                        sqlType = "VARBINARY(MAX)";
+                    else if (type == typeof(Guid))
+                        sqlType = "UNIQUEIDENTIFIER";
+                    else if (type.IsEnum)
+                        sqlType = "INT";
+                    else
+                        throw new NotSupportedException($"Тип {type} не поддерживается.");
 
-                    throw new NotSupportedException($"Тип {type} не поддерживается.");
+                    break;
             }
+
+            return underlyingType != null ? $"{sqlType} NULL" : sqlType;
         }
     }
 }

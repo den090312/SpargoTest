@@ -1,4 +1,6 @@
-﻿using SpargoTest.Interfaces;
+﻿using System.Data.SqlClient;
+
+using SpargoTest.Interfaces;
 using SpargoTest.Menu;
 using SpargoTest.Repository;
 
@@ -10,9 +12,19 @@ namespace SpargoTest.Services
     public static class Tools
     {
         /// <summary>
+        /// Провайдер базы данных
+        /// </summary>
+        private static IDatabaseProvider _databaseProvider = new SqlExpressProvider();
+
+        /// <summary>
+        /// Инициализация базы данных
+        /// </summary>
+        public static void InitializeDatabase() => _databaseProvider.Initialize();
+
+        /// <summary>
         /// Хранилище
         /// </summary>
-        public static ICrud Storage => new Storage(new SqlServerProvider(createTables: true));
+        public static ICrud Storage => new Storage(_databaseProvider);
 
         /// <summary>
         /// Консольное меню
@@ -37,6 +49,25 @@ namespace SpargoTest.Services
 #endif
 
             return appRoot;
+        }
+
+        /// <summary>
+        /// Попытка установить подключение с SQL Server
+        /// </summary>
+        /// <param name="connection">Строка подключения</param>
+        /// <returns>Результат подключения</returns>
+        public static bool TryOpen(this SqlConnection connection)
+        {
+            try
+            {
+                connection.Open();
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>

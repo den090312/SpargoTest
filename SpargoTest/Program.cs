@@ -27,21 +27,13 @@ namespace SpargoTest
                 Console.WriteLine($"3. {ConsoleMenu.Warehouses}");
                 Console.WriteLine($"4. {ConsoleMenu.Consignments}");
                 Console.WriteLine("5. Вывести список товаров и их количество в выбранной аптеке");
-                Console.WriteLine("6. Выход");
+                Console.WriteLine("6. Пересоздать базу данных");
+                Console.WriteLine("7. Выход");
 
                 if (!int.TryParse(Console.ReadLine(), out int choice))
                     Console.WriteLine("Неверный ввод. Пожалуйста, введите число от 1 до 6.");
                 else
                 {
-                    var dbProvider = new SqlServerProvider(createTables: true);
-
-                    if (!dbProvider.ConnectionIsOk())
-                    {
-                        Console.WriteLine("Не удалось соединиться с базой данных");
-
-                        return;
-                    }
-
                     switch (choice)
                     {
                         case 1:
@@ -60,6 +52,9 @@ namespace SpargoTest
                             // Вывод списка товаров и их количества в выбранной аптеке
                             break;
                         case 6:
+                            Tools.InitializeDatabase();
+                            break;
+                        case 7:
                             exit = true;
                             break;
                     }
