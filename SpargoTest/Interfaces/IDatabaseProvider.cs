@@ -1,4 +1,6 @@
-﻿namespace SpargoTest.Interfaces
+﻿using SpargoTest.Services;
+
+namespace SpargoTest.Interfaces
 {
     /// <summary>
     /// Провайдер для работы с базой данных

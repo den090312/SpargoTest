@@ -1,57 +1,20 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Net.Http.Headers;
 using System.Reflection;
 
 using SpargoTest.CustomConsole;
 using SpargoTest.Interfaces;
+using SpargoTest.Menu;
 using SpargoTest.Models;
+using SpargoTest.Repository;
+using SpargoTest.Services;
 
 namespace SpargoTest
 {
     public class Program
     {
-        public static string ModelsFolderName => "Models";
-
-        /// <summary>
-        /// Получение корневого каталога для текущего запуска приложения
-        /// </summary>
-        /// <returns>Корневой каталог приложения</returns>
-        public static string BaseDirectory()
-        {
-            var appRoot = AppDomain.CurrentDomain.BaseDirectory;
-            
-            #if DEBUG
-                appRoot = Path.GetFullPath(Path.Combine(appRoot, @"..\..\..\"));
-            #endif
-
-            return appRoot;
-        }
-
-        /// <summary>
-        /// Консольный вывод свойств класса
-        /// </summary>
-        /// <typeparam name="T">Тип класса</typeparam>
-        /// <param name="items">Перечень объектов класса</param>
-        public static void Output<T>(IEnumerable<T> items)
-        {
-            foreach (var item in items)
-            {
-                var properties = typeof(T).GetProperties();
-                var values = properties.Select(property => $"{property.Name}: '{property.GetValue(item)}'");
-
-                Console.WriteLine(string.Join(", ", values));
-            }
-        }
-
         static void Main(string[] args)
-        {
-            MainMenu();
-        }
-
-        /// <summary>
-        /// Главное меню
-        /// </summary>
-        public static void MainMenu()
         {
             var exit = false;
 
@@ -70,7 +33,6 @@ namespace SpargoTest
                     Console.WriteLine("Неверный ввод. Пожалуйста, введите число от 1 до 6.");
                 else
                 {
-                    var menu = new ConsoleMenu();
                     var dbProvider = new SqlServerProvider(createTables: true);
 
                     if (!dbProvider.ConnectionIsOk())
@@ -80,21 +42,19 @@ namespace SpargoTest
                         return;
                     }
 
-                    var storage = new Storage(dbProvider);
-
                     switch (choice)
                     {
                         case 1:
-                            ProductChoice(choice, menu, storage);
+                            Choice(choice, ConsoleMenu.Products, "товар", new ProductConsole());
                             break;
                         case 2:
-                            PharmacyChoice(choice, menu, storage);
+                            Choice(choice, ConsoleMenu.Pharmacies, "аптеку", new PharmacyConsole());
                             break;
                         case 3:
-                            WarehouseChoice(choice, menu, storage);
+                            Choice(choice, ConsoleMenu.Warehouses, "склад", new WarehouseConsole());
                             break;
                         case 4:
-                            ConsignmentChoice(choice, menu, storage);
+                            Choice(choice, ConsoleMenu.Consignments, "партию", new ConsignmentConsole());
                             break;
                         case 5:
                             // Вывод списка товаров и их количества в выбранной аптеке
@@ -107,63 +67,26 @@ namespace SpargoTest
             }
         }
 
-        private static void ConsignmentChoice(int choice, ConsoleMenu menu, Storage storage)
+        /// <summary>
+        /// Обработка консольного выбора
+        /// </summary>
+        /// <typeparam name="T">Тип объекта</typeparam>
+        /// <param name="choice">Опция выбора</param>
+        /// <param name="subMenuTitle">Заголовок подменю</param>
+        /// <param name="subMenuName">Имя меню</param>
+        /// <param name="input">Интерфейс для ввода данных</param>
+        private static void Choice<T>(int choice, string subMenuTitle, string subMenuName, IInput<T> input) where T : class
         {
-            var consignmentSubMenu = new ConsoleSubMenu { Title = ConsoleMenu.Consignments + ":", Items = menu.GetSubMenu("партию") };
-            var consignments = storage.GetAll<Consignment>(out Result result);
+            var subMenu = new ConsoleSubMenu { Title = subMenuTitle + ":", Items = Tools.Menu.GetSubMenu(subMenuName) };
+            var items = Tools.Storage.GetAll<T>(out Result result);
 
             if (!result.Success)
-                Console.WriteLine("Ошибка при получении складов");
+                Console.WriteLine($"Ошибка при получении {subMenuName}");
 
-            menu.Go(consignmentSubMenu, consignments, out choice, out bool proceed);
-
-            if (proceed)
-                menu.Action(choice, storage, new ConsignmentConsole());
-        }
-
-        private static void WarehouseChoice(int choice, ConsoleMenu menu, Storage storage)
-        {
-            var warehoseSubMenu = new ConsoleSubMenu { Title = ConsoleMenu.Warehouses + ":", Items = menu.GetSubMenu("склад") };
-            var warehouses = storage.GetAll<Warehouse>(out Result result);
-
-            if (!result.Success)
-                Console.WriteLine("Ошибка при получении складов");
-
-            menu.Go(warehoseSubMenu, warehouses, out choice, out bool proceed);
+            Tools.Menu.Go(subMenu, items, out choice, out bool proceed);
 
             if (proceed)
-                menu.Action(choice, storage, new WarehouseConsole());
+                Tools.Menu.Action(choice, Tools.Storage, input);
         }
-
-        private static void PharmacyChoice(int choice, ConsoleMenu menu, Storage storage)
-        {
-            var pharmacySubMenu = new ConsoleSubMenu { Title = ConsoleMenu.Pharmacies + ":", Items = menu.GetSubMenu("аптеку") };
-            var pharmacies = storage.GetAll<Pharmacy>(out Result result);
-
-            if (!result.Success)
-                Console.WriteLine("Ошибка при получении аптек");
-
-            menu.Go(pharmacySubMenu, pharmacies, out choice, out bool proceed);
-
-            if (proceed)
-                menu.Action(choice, storage, new PharmacyConsole());
-        }
-
-        private static void ProductChoice(int choice, ConsoleMenu menu, Storage storage)
-        {
-            var productSubMenu = new ConsoleSubMenu { Title = ConsoleMenu.Products + ":", Items = menu.GetSubMenu("товар") };
-            var products = storage.GetAll<Product>(out Result result);
-
-            if (!result.Success)
-                Console.WriteLine("Ошибка при получении продуктов");
-
-            menu.Go(productSubMenu, products, out choice, out bool proceed);
-
-            if (proceed)
-                menu.Action(choice, storage, new ProductConsole());
-        }
-
-        private static List<string> GetMenuItemsList(string menuItem) 
-            => new List<string> { $"{ConsoleMenu.CreateTitle} {menuItem}", $"{ConsoleMenu.DeleteTitle} {menuItem}" };
     }
 }

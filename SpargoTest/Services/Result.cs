@@ -1,4 +1,4 @@
-﻿namespace SpargoTest
+﻿namespace SpargoTest.Services
 {
     /// <summary>
     /// Тип операции
@@ -25,7 +25,7 @@
         /// Тип операции
         /// </summary>
         public CrudOperation Operation { get; set; }
-        
+
         /// <summary>
         /// Сообщение об ошибке
         /// </summary>

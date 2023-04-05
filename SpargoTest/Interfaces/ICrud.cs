@@ -1,4 +1,6 @@
-﻿namespace SpargoTest.Interfaces
+﻿using SpargoTest.Services;
+
+namespace SpargoTest.Interfaces
 {
     /// <summary>
     /// Интерфейс операций с объектами

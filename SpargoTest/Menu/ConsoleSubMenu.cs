@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using SpargoTest.Interfaces;
 
-namespace SpargoTest
+namespace SpargoTest.Menu
 {
     /// <summary>
     /// Пункт меню в консоли

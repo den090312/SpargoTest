@@ -3,8 +3,9 @@
 using SpargoTest.CustomConsole;
 using SpargoTest.Interfaces;
 using SpargoTest.Models;
+using SpargoTest.Services;
 
-namespace SpargoTest
+namespace SpargoTest.Menu
 {
     /// <summary>
     /// Главное консольное меню
@@ -12,17 +13,17 @@ namespace SpargoTest
     public class ConsoleMenu : IMainMenu
     {
         private static readonly string _listTitle = "Список";
-        
+
         public static string CreateTitle { get; } = "Создать";
-        
+
         public static string DeleteTitle { get; } = "Удалить";
-        
+
         public static string Products { get; } = $"{_listTitle} товарных наименований";
-        
+
         public static string Pharmacies { get; } = $"{_listTitle} аптек";
-        
+
         public static string Warehouses { get; } = $"{_listTitle} складов";
-        
+
         public static string Consignments { get; } = $"{_listTitle} партий";
 
         /// <summary>
@@ -45,7 +46,7 @@ namespace SpargoTest
             {
                 Console.WriteLine(subMenu.Title);
 
-                Program.Output<T>(objects);
+                Tools.Output(objects);
 
                 var i = 1;
 
@@ -86,8 +87,8 @@ namespace SpargoTest
         /// <typeparam name="T">Тип объекта действия</typeparam>
         /// <param name="choice">Выбор опции для действия с объектом</param>
         /// <param name="crud">Набор операций с объектом</param>
-        /// <param name="io">Интерфейс ввода-вывода</param>
-        public void Action<T>(int choice, ICrud crud, IInput<T> io)
+        /// <param name="input">Интерфейс ввода</param>
+        public void Action<T>(int choice, ICrud crud, IInput<T> input)
         {
             if (choice == 2)
                 Delete<T>(crud);
@@ -95,7 +96,7 @@ namespace SpargoTest
             if (choice != 1)
                 return;
 
-            crud.Create<T>(io.Input(), out Result crudResult);
+            crud.Create<T>(input.Input(), out Result crudResult);
 
             SuccessMessage(crudResult);
         }
@@ -106,7 +107,7 @@ namespace SpargoTest
         /// <param name="menuItem">Пункт меню</param>
         /// <returns>Перечень пунктов меню</returns>
         public IEnumerable<string> GetSubMenu(string menuItem)
-            => new List<string> { $"{ConsoleMenu.CreateTitle} {menuItem}", $"{ConsoleMenu.DeleteTitle} {menuItem}" };
+            => new List<string> { $"{CreateTitle} {menuItem}", $"{DeleteTitle} {menuItem}" };
 
         /// <summary>
         /// Вывод сообщения об успешном выполнении операции
@@ -148,7 +149,10 @@ namespace SpargoTest
         /// Вывод ошибки меню на консоль
         /// </summary>
         /// <param name="count">Количество пунктов меню</param>
-        private static void WriteError(int count) 
-            => Console.WriteLine($"Неверный ввод. Пожалуйста, введите число от 1 до {count + 1}.");
+        private static void WriteError(int count)
+        {
+            Console.Clear();
+            Console.WriteLine($"Неверный ввод. Пожалуйста, введите число от 1 до {count + 1}.");
+        }
     }
 }

@@ -3,8 +3,9 @@ using System.Reflection;
 using System.Text;
 
 using SpargoTest.Interfaces;
+using SpargoTest.Services;
 
-namespace SpargoTest
+namespace SpargoTest.Repository
 {
     /// <summary>
     /// Провайдер базы данных SQL Server
@@ -107,9 +108,9 @@ namespace SpargoTest
                 connection.Open();
 
                 using var command = new SqlCommand($"SELECT * FROM {typeof(T).Name} WHERE Id = @id", connection);
-                
+
                 command.Parameters.AddWithValue("@id", Id);
-                
+
                 try
                 {
                     using var reader = command.ExecuteReader();
@@ -135,7 +136,7 @@ namespace SpargoTest
             }
 
             var item = Activator.CreateInstance<T>();
-            
+
             foreach (var property in typeof(T).GetProperties())
             {
                 if (data.ContainsKey(property.Name) && data[property.Name] != DBNull.Value)
@@ -143,7 +144,7 @@ namespace SpargoTest
             }
 
             crudResult = new Result(CrudOperation.Read);
-            
+
             return item;
         }
 
@@ -161,7 +162,7 @@ namespace SpargoTest
             {
                 connection.Open();
                 using var command = new SqlCommand($"SELECT * FROM {typeof(T).Name}", connection);
-                
+
                 try
                 {
                     using var reader = command.ExecuteReader();
@@ -172,7 +173,7 @@ namespace SpargoTest
 
                         for (int i = 0; i < reader.FieldCount; i++)
                             rowData.Add(reader.GetName(i), reader.GetValue(i));
-                        
+
                         data.Add(rowData);
                     }
                 }
@@ -185,11 +186,11 @@ namespace SpargoTest
             }
 
             var objects = new List<T>();
-            
+
             foreach (var itemData in data)
             {
                 var item = Activator.CreateInstance<T>();
-                
+
                 foreach (var property in typeof(T).GetProperties())
                 {
                     if (itemData.ContainsKey(property.Name) && itemData[property.Name] != DBNull.Value)
@@ -200,7 +201,7 @@ namespace SpargoTest
             }
 
             result = new Result(CrudOperation.Read);
-            
+
             return objects;
         }
 
@@ -215,21 +216,21 @@ namespace SpargoTest
             if (Id == default)
             {
                 result = new Result(CrudOperation.Delete, "Некорректное значение идентификатора");
-                
+
                 return;
             }
 
             var commandText = $"DELETE FROM {typeof(T).Name} WHERE Id = @Id";
-            
+
             var rowsAffected = 0;
-            
+
             using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
 
                 using var command = new SqlCommand(commandText, connection);
                 command.Parameters.Add(new SqlParameter("@Id", Id));
-                
+
                 try
                 {
                     rowsAffected = command.ExecuteNonQuery();
@@ -255,7 +256,7 @@ namespace SpargoTest
         {
             var assembly = Assembly.GetExecutingAssembly();
 
-            var modelsPath = Path.Combine(Program.BaseDirectory(), Program.ModelsFolderName);
+            var modelsPath = Path.Combine(Tools.BaseDirectory(), Tools.ModelsFolderName);
             var modelFiles = Directory.GetFiles(modelsPath, "*.cs");
 
             var createTablesQuery = new StringBuilder();
@@ -271,7 +272,7 @@ namespace SpargoTest
                 var classType = assembly
                     .GetTypes()
                     .FirstOrDefault(t => t.FullName != null
-                        && t.FullName.Contains($"{Program.ModelsFolderName}.{className}"));
+                        && t.FullName.Contains($"{Tools.ModelsFolderName}.{className}"));
 
                 if (classType == default)
                     continue;
