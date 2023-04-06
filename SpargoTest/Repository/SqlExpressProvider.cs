@@ -174,6 +174,32 @@ namespace SpargoTest.Repository
         }
 
         /// <summary>
+        /// Удаление объекта из базы данных SQL Server Express
+        /// </summary>
+        /// <typeparam name="T">Тип удаляемого объекта</typeparam>
+        /// <param name="Id">Идентификатор удаляемого объекта</param>
+        /// <param name="result">Результат удаления</param>
+        public void Remove<T>(int Id, out Result result)
+        {
+            if (Id == default)
+            {
+                result = new Result(CrudOperation.Delete, "Некорректное значение идентификатора");
+
+                return;
+            }
+
+            var commandText = $"DELETE FROM {typeof(T).Name} WHERE Id = @Id";
+            var parameters = new[] { new SqlParameter("@Id", Id) };
+
+            var rowsAffected = ExecuteNonQuery(commandText, parameters, out result);
+
+            if (rowsAffected > 0)
+                result = new Result(CrudOperation.Delete);
+            else
+                result = new Result(CrudOperation.Delete, "Ошибка при удалении объекта из базы данных");
+        }
+
+        /// <summary>
         /// Установка свойства
         /// </summary>
         /// <typeparam name="T">Тип объекта</typeparam>
@@ -204,32 +230,6 @@ namespace SpargoTest.Repository
                 if (item != null)
                     objects.Add(item);
             }
-        }
-
-        /// <summary>
-        /// Удаление объекта из базы данных SQL Server Express
-        /// </summary>
-        /// <typeparam name="T">Тип удаляемого объекта</typeparam>
-        /// <param name="Id">Идентификатор удаляемого объекта</param>
-        /// <param name="result">Результат удаления</param>
-        public void Remove<T>(int Id, out Result result)
-        {
-            if (Id == default)
-            {
-                result = new Result(CrudOperation.Delete, "Некорректное значение идентификатора");
-
-                return;
-            }
-
-            var commandText = $"DELETE FROM {typeof(T).Name} WHERE Id = @Id";
-            var parameters = new[] { new SqlParameter("@Id", Id) };
-
-            var rowsAffected = ExecuteNonQuery(commandText, parameters, out result);
-
-            if (rowsAffected > 0)
-                result = new Result(CrudOperation.Delete);
-            else
-                result = new Result(CrudOperation.Delete, "Ошибка при удалении объекта из базы данных");
         }
 
         /// <summary>
