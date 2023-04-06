@@ -54,9 +54,9 @@ namespace SpargoTest.Services
             => new SqlExpressProvider().GetProductsByPharmacy(pharmacyId);
 
         /// <summary>
-        /// Консольный вывод об успехе операции
+        /// Вывод сообщения об успехе
         /// </summary>
-        public static void SuccessOutput()
+        public static void WriteSuccessMessage()
         {
             Tools.Terminal.Output("Операция выполнена успешно. Нажмите любую клавишу.");
             Tools.Terminal.Input();

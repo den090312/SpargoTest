@@ -53,7 +53,7 @@ namespace SpargoTest
                     var pharmacyId = Tools.CheckId<Pharmacy>("Введите идентификатор аптеки:");
                     var products = Tools.GetProductsByPharmacy(pharmacyId);
                     Tools.Output(products);
-                    Tools.SuccessOutput();
+                    Tools.WriteSuccessMessage();
                     break;
                 case 6:
                     Tools.InitializeDatabase();

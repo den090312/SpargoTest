@@ -120,39 +120,20 @@ namespace SpargoTest.Repository
         /// <returns>Получаемый объект</returns>
         public T? Get<T>(int Id, out Result result)
         {
-            var data = new Dictionary<string, object>();
+            var parameters = new[] { new SqlParameter("@Id", Id) };
+            var data = GetData($"SELECT * FROM {typeof(T).Name} WHERE Id = @Id", parameters).FirstOrDefault();
 
-            using (var connection = new SqlConnection(DatabaseConnectionString))
+            if (data == null)
             {
-                var parameters = new[] { new SqlParameter("@Id", Id) };
-                var reader = GetReader(connection, parameters, $"SELECT * FROM {typeof(T).Name} WHERE Id = @id", out result);
+                result = new Result(CrudOperation.Read, "Объект не найден в БД");
 
-                if (reader == null)
-                    return default;
-
-                if (reader.Read())
-                {
-                    for (int i = 0; i < reader.FieldCount; i++)
-                        data.Add(reader.GetName(i), reader.GetValue(i));
-                }
-                else
-                {
-                    result = new Result(CrudOperation.Read, "Объект не найден в БД");
-
-                    return default;
-                }
+                return default;
             }
 
             var item = Activator.CreateInstance<T>();
-
-            foreach (var property in typeof(T).GetProperties())
-            {
-                if (data.ContainsKey(property.Name) && data[property.Name] != DBNull.Value)
-                    property.SetValue(item, data[property.Name]);
-            }
-
+            SetProperties(data, ref item);
             result = new Result(CrudOperation.Read);
-            
+
             return item;
         }
 
@@ -163,43 +144,15 @@ namespace SpargoTest.Repository
         /// <returns>Список продуктов</returns>
         public IEnumerable<ProductDto> GetProductsByPharmacy(int pharmacyId)
         {
-            var data = new List<Dictionary<string, object>>();
-
-            using (var connection = new SqlConnection(DatabaseConnectionString))
-            {
-                var query = "SELECT Product.Id AS Id, Product.Name AS Name, COUNT(Consignment.Id) AS ProductCount FROM Product JOIN Consignment ON Product.Id = Consignment.ProductId JOIN Warehouse ON Consignment.WarehouseId = Warehouse.Id WHERE Warehouse.PharmacyId = @PharmacyId GROUP BY Product.Id, Product.Name";
-
-                var parameters = new[] { new SqlParameter("@PharmacyId", pharmacyId) };
-                var reader = GetReader(connection, parameters, query, out Result result);
-
-                if (reader == null)
-                    return Enumerable.Empty<ProductDto>();
-
-                while (reader.Read())
-                {
-                    var rowData = new Dictionary<string, object>();
-
-                    for (int i = 0; i < reader.FieldCount; i++)
-                        rowData.Add(reader.GetName(i), reader.GetValue(i));
-
-                    data.Add(rowData);
-                }
-            }
-
+            var query = "SELECT Product.Id AS Id, Product.Name AS Name, COUNT(Consignment.Id) AS ProductCount FROM Product " +
+                "JOIN Consignment ON Product.Id = Consignment.ProductId " +
+                "JOIN Warehouse ON Consignment.WarehouseId = Warehouse.Id " +
+                "WHERE Warehouse.PharmacyId = @PharmacyId " +
+                "GROUP BY Product.Id, Product.Name";
+            var parameters = new[] { new SqlParameter("@PharmacyId", pharmacyId) };
+            var data = GetData(query, parameters);
             var objects = new List<ProductDto>();
-
-            foreach (var itemData in data)
-            {
-                var item = Activator.CreateInstance<ProductDto>();
-
-                foreach (var property in typeof(ProductDto).GetProperties())
-                {
-                    if (itemData.ContainsKey(property.Name) && itemData[property.Name] != DBNull.Value)
-                        property.SetValue(item, itemData[property.Name]);
-                }
-
-                objects.Add(item);
-            }
+            SetData(data, ref objects);
 
             return objects;
         }
@@ -212,44 +165,45 @@ namespace SpargoTest.Repository
         /// <returns>Перечень объектов</returns>
         public IEnumerable<T> GetAll<T>(out Result result)
         {
-            var data = new List<Dictionary<string, object>>();
-
-            using (var connection = new SqlConnection(DatabaseConnectionString))
-            {
-                var reader = GetReader(connection, $"SELECT * FROM {typeof(T).Name}", out result);
-
-                if (reader == null)
-                    return Enumerable.Empty<T>();
-
-                while (reader.Read())
-                {
-                    var rowData = new Dictionary<string, object>();
-
-                    for (int i = 0; i < reader.FieldCount; i++)
-                        rowData.Add(reader.GetName(i), reader.GetValue(i));
-
-                    data.Add(rowData);
-                }
-            }
-
+            var data = GetData($"SELECT * FROM {typeof(T).Name}");
             var objects = new List<T>();
-
-            foreach (var itemData in data)
-            {
-                var item = Activator.CreateInstance<T>();
-
-                foreach (var property in typeof(T).GetProperties())
-                {
-                    if (itemData.ContainsKey(property.Name) && itemData[property.Name] != DBNull.Value)
-                        property.SetValue(item, itemData[property.Name]);
-                }
-
-                objects.Add(item);
-            }
-
+            SetData(data, ref objects);
             result = new Result(CrudOperation.Read);
 
             return objects;
+        }
+
+        /// <summary>
+        /// Установка свойства
+        /// </summary>
+        /// <typeparam name="T">Тип объекта</typeparam>
+        /// <param name="data">Данные для свойства</param>
+        /// <param name="item">Объект для свойства</param>
+        private static void SetProperties<T>(Dictionary<string, object> data, ref T? item)
+        {
+            foreach (var property in typeof(T).GetProperties())
+            {
+                if (data.ContainsKey(property.Name) && data[property.Name] != DBNull.Value)
+                    property.SetValue(item, data[property.Name]);
+            }
+        }
+
+        /// <summary>
+        /// Установка данных
+        /// </summary>
+        /// <typeparam name="T">Тип объекта</typeparam>
+        /// <param name="data">Данные</param>
+        /// <param name="objects">Коллекция для установки данных</param>
+        private static void SetData<T>(IEnumerable<Dictionary<string, object>> data, ref List<T> objects)
+        {
+            foreach (var itemData in data)
+            {
+                var item = Activator.CreateInstance<T>();
+                SetProperties(itemData, ref item);
+
+                if (item != null)
+                    objects.Add(item);
+            }
         }
 
         /// <summary>
@@ -276,6 +230,37 @@ namespace SpargoTest.Repository
                 result = new Result(CrudOperation.Delete);
             else
                 result = new Result(CrudOperation.Delete, "Ошибка при удалении объекта из базы данных");
+        }
+
+        /// <summary>
+        /// Получение данных
+        /// </summary>
+        /// <param name="query">Строка запроса</param>
+        /// <param name="parameters">Параметры запроса</param>
+        /// <returns>Перечень данных</returns>
+        private IEnumerable<Dictionary<string, object>> GetData(string query, SqlParameter[]? parameters = null)
+        {
+            var data = new List<Dictionary<string, object>>();
+
+            using (var connection = new SqlConnection(DatabaseConnectionString))
+            {
+                var reader = GetReader(connection, parameters, query, out Result result);
+
+                if (reader == null)
+                    return Enumerable.Empty<Dictionary<string, object>>();
+
+                while (reader.Read())
+                {
+                    var rowData = new Dictionary<string, object>();
+
+                    for (int i = 0; i < reader.FieldCount; i++)
+                        rowData.Add(reader.GetName(i), reader.GetValue(i));
+
+                    data.Add(rowData);
+                }
+            }
+
+            return data;
         }
 
         /// <summary>
@@ -336,39 +321,14 @@ namespace SpargoTest.Repository
         /// <param name="query">Код выполнения запроса на считывание</param>
         /// <param name="result">Результат<</param>
         /// <returns>Считыватель</returns>
-        private SqlDataReader? GetReader(SqlConnection connection, SqlParameter[] parameters, string query, out Result result)
+        private SqlDataReader? GetReader(SqlConnection connection, SqlParameter[]? parameters, string query, out Result result)
         {
             connection.Open();
 
             using var command = new SqlCommand(query, connection);
-            command.Parameters.AddRange(parameters);
 
-            try
-            {
-                result = new Result(CrudOperation.Read);
-
-                return command.ExecuteReader();
-            }
-            catch (Exception ex)
-            {
-                result = new Result(CrudOperation.Read, ex.Message);
-
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Получение считывателя данных БД
-        /// </summary>
-        /// <typeparam name="T">Тип считываемого объекта</typeparam>
-        /// <param name="query">Код выполнения запроса на считывание</param>
-        /// <param name="result">Результат<</param>
-        /// <returns>Считыватель</returns>
-        private SqlDataReader? GetReader(SqlConnection connection, string query, out Result result)
-        {
-            connection.Open();
-
-            using var command = new SqlCommand(query, connection);
+            if (parameters != null)
+                command.Parameters.AddRange(parameters);
 
             try
             {
@@ -426,7 +386,6 @@ namespace SpargoTest.Repository
             using (var connection = new SqlConnection(DatabaseConnectionString))
             {
                 connection.Open();
-
                 using var command = new SqlCommand(query, connection);
 
                 try
@@ -450,10 +409,8 @@ namespace SpargoTest.Repository
         private void CreateTables()
         {
             var assembly = Assembly.GetExecutingAssembly();
-
             var modelsPath = Path.Combine(Tools.BaseDirectory(), Tools.ModelsFolderName);
             var modelFiles = Directory.GetFiles(modelsPath, "*.cs");
-
             var createTablesQuery = new StringBuilder();
             var foreignKeysQuery = new StringBuilder();
 
@@ -485,7 +442,6 @@ namespace SpargoTest.Repository
                 return;
 
             ExecuteNonQuery(createTablesQuery.ToString(), out Result result);
-
             if (foreignKeysQuery.Length > 0)
                 ExecuteNonQuery(foreignKeysQuery.ToString(), out result);
         }

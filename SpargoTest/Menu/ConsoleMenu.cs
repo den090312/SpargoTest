@@ -100,14 +100,14 @@ namespace SpargoTest.Menu
             if (choice == 2)
             {
                 Delete<T>(crud);
-                Tools.SuccessOutput();
+                Tools.WriteSuccessMessage();
             }
 
             if (choice != 1)
                 return;
 
             crud.Create<T>(panel.Get(), out Result result);
-            Tools.SuccessOutput();
+            Tools.WriteSuccessMessage();
         }
 
         /// <summary>
