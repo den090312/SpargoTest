@@ -1,4 +1,5 @@
-﻿using System.Data.SqlClient;
+﻿using System.ComponentModel;
+using System.Data.SqlClient;
 
 using SpargoTest.Interfaces;
 using SpargoTest.Menu;
@@ -52,25 +53,6 @@ namespace SpargoTest.Services
         }
 
         /// <summary>
-        /// Попытка установить подключение с SQL Server
-        /// </summary>
-        /// <param name="connection">Строка подключения</param>
-        /// <returns>Результат подключения</returns>
-        public static bool TryOpen(this SqlConnection connection)
-        {
-            try
-            {
-                connection.Open();
-
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
         /// Консольный вывод свойств класса
         /// </summary>
         /// <typeparam name="T">Тип класса</typeparam>
@@ -84,6 +66,82 @@ namespace SpargoTest.Services
 
                 Console.WriteLine(string.Join(", ", values));
             }
+        }
+
+        /// <summary>
+        /// Проверка объекта по идентификатору
+        /// </summary>
+        /// <typeparam name="T">Тип объекта</typeparam>
+        /// <param name="message">Служебное сообщение</param>
+        /// <returns>Значение идентификатора</returns>
+        public static int CheckId<T>(string message) where T : class
+        {
+            int id;
+
+            while (true)
+            {
+                id = Tools.Input<int>(message);
+
+                Storage.Get<T>(id, out Result result);
+
+                if (!result.Success)
+                {
+                    Console.WriteLine($"Объект с идентификатором {id} не найден.");
+
+                    continue;
+                }
+
+                break;
+            }
+
+            return id;
+        }
+
+        /// <summary>
+        /// Получение значения из консоли
+        /// </summary>
+        /// <typeparam name="T">Тип значения</typeparam>
+        /// <param name="message">Сообщение для ввода данных</param>
+        /// <returns>Значение</returns>
+        private static T? Input<T>(string message)
+        {
+            T? value;
+
+            while (true)
+            {
+                Console.WriteLine(message);
+
+                if (Tools.StringTryParse(Console.ReadLine(), out value))
+                    break;
+
+                Console.WriteLine("Введите корректное значение");
+            }
+
+            return value;
+        }
+
+        /// <summary>
+        /// Конвертер строки
+        /// </summary>
+        /// <typeparam name="T">Тип результата конвертации</typeparam>
+        /// <param name="input">Конвертируемая строка</param>
+        /// <param name="value">Сконвертированное значение</param>
+        /// <returns>Результат конвертера</returns>
+        private static bool StringTryParse<T>(string? input, out T? value)
+        {
+            value = default;
+
+            if (input == null)
+                return false;
+
+            var converter = TypeDescriptor.GetConverter(typeof(T));
+
+            if (converter == null || !converter.IsValid(input))
+                return false;
+
+            value = (T?)converter.ConvertFromString(input);
+
+            return true;
         }
     }
 }

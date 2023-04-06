@@ -67,7 +67,21 @@ namespace SpargoTest.Repository
         /// Тест подключения к серверу
         /// </summary>
         /// <returns>Результат теста поключения</returns>
-        public bool ServerOnline() => new SqlConnection(_serverConnectionString).TryOpen();
+        public bool ServerOnline()
+        {
+            using var connection = new SqlConnection(_serverConnectionString);
+
+            try
+            {
+                connection.Open();
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
         /// <summary>
         /// Записать объект в базу данных SQL Server Express
@@ -106,21 +120,25 @@ namespace SpargoTest.Repository
         {
             var data = new Dictionary<string, object>();
 
-            var reader = ExecuteReader<T>($"SELECT * FROM {typeof(T).Name} WHERE Id = @id", out result);
-            
-            if (reader == null)
-                return default;
+            using (var connection = new SqlConnection(DatabaseConnectionString))
+            {
+                var parameters = new[] { new SqlParameter("@Id", Id) };
+                var reader = ExecuteReader<T>(connection, parameters, $"SELECT * FROM {typeof(T).Name} WHERE Id = @id", out result);
 
-            if (reader.Read())
-            {
-                for (int i = 0; i < reader.FieldCount; i++)
-                    data.Add(reader.GetName(i), reader.GetValue(i));
-            }
-            else
-            {
-                result = new Result(CrudOperation.Read, "Объект не найден в БД");
-                
-                return default;
+                if (reader == null)
+                    return default;
+
+                if (reader.Read())
+                {
+                    for (int i = 0; i < reader.FieldCount; i++)
+                        data.Add(reader.GetName(i), reader.GetValue(i));
+                }
+                else
+                {
+                    result = new Result(CrudOperation.Read, "Объект не найден в БД");
+
+                    return default;
+                }
             }
 
             var item = Activator.CreateInstance<T>();
@@ -146,19 +164,22 @@ namespace SpargoTest.Repository
         {
             var data = new List<Dictionary<string, object>>();
 
-            var reader = ExecuteReader<T>($"SELECT * FROM {typeof(T).Name}", out result);
-
-            if (reader == null)
-                return Enumerable.Empty<T>();
-
-            while (reader.Read())
+            using (var connection = new SqlConnection(DatabaseConnectionString))
             {
-                var rowData = new Dictionary<string, object>();
+                var reader = ExecuteReader<T>(connection, $"SELECT * FROM {typeof(T).Name}", out result);
 
-                for (int i = 0; i < reader.FieldCount; i++)
-                    rowData.Add(reader.GetName(i), reader.GetValue(i));
+                if (reader == null)
+                    return Enumerable.Empty<T>();
 
-                data.Add(rowData);
+                while (reader.Read())
+                {
+                    var rowData = new Dictionary<string, object>();
+
+                    for (int i = 0; i < reader.FieldCount; i++)
+                        rowData.Add(reader.GetName(i), reader.GetValue(i));
+
+                    data.Add(rowData);
+                }
             }
 
             var objects = new List<T>();
@@ -261,28 +282,56 @@ namespace SpargoTest.Repository
         /// Получение считывателя данных БД
         /// </summary>
         /// <typeparam name="T">Тип считываемого объекта</typeparam>
+        /// <param name="connection">Соединение</param>
+        /// <param name="parameters">Параметры</param>
         /// <param name="query">Код выполнения запроса на считывание</param>
         /// <param name="result">Результат<</param>
         /// <returns>Считыватель</returns>
-        private SqlDataReader? ExecuteReader<T>(string query, out Result result)
+        private SqlDataReader? ExecuteReader<T>(SqlConnection connection, SqlParameter[] parameters, string query, out Result result)
         {
-            using (var connection = new SqlConnection(DatabaseConnectionString))
+            connection.Open();
+
+            using var command = new SqlCommand(query, connection);
+            command.Parameters.AddRange(parameters);
+
+            try
             {
-                connection.Open();
-                using var command = new SqlCommand(query, connection);
+                result = new Result(CrudOperation.Read);
 
-                try
-                {
-                    result = new Result(CrudOperation.Read);
+                return command.ExecuteReader();
+            }
+            catch (Exception ex)
+            {
+                result = new Result(CrudOperation.Read, ex.Message);
 
-                    return command.ExecuteReader();
-                }
-                catch (Exception ex)
-                {
-                    result = new Result(CrudOperation.Read, ex.Message);
-                    
-                    return null;
-                }
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Получение считывателя данных БД
+        /// </summary>
+        /// <typeparam name="T">Тип считываемого объекта</typeparam>
+        /// <param name="query">Код выполнения запроса на считывание</param>
+        /// <param name="result">Результат<</param>
+        /// <returns>Считыватель</returns>
+        private SqlDataReader? ExecuteReader<T>(SqlConnection connection, string query, out Result result)
+        {
+            connection.Open();
+
+            using var command = new SqlCommand(query, connection);
+
+            try
+            {
+                result = new Result(CrudOperation.Read);
+
+                return command.ExecuteReader();
+            }
+            catch (Exception ex)
+            {
+                result = new Result(CrudOperation.Read, ex.Message);
+
+                return null;
             }
         }
 

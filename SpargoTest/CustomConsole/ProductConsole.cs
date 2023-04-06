@@ -4,15 +4,15 @@ using SpargoTest.Models;
 namespace SpargoTest.CustomConsole
 {
     /// <summary>
-    /// Консольный функционал для продуктов
+    /// Консольный функционал для товаров
     /// </summary>
-    public class ProductConsole : IInput<Product>
+    public class ProductConsole : IOutput<Product>
     {
         /// <summary>
-        /// Создание продукта через консоль
+        /// Создание товар через консоль
         /// </summary>
-        /// <returns>Продукт</returns>
-        public Product Input()
+        /// <returns>Товар</returns>
+        public Product Output()
         {
             var prodcut = new Product();
 

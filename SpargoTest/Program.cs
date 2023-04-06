@@ -38,23 +38,26 @@ namespace SpargoTest
             {
                 case 1:
                     Choice(choice, ConsoleMenu.Products, "товар", new ProductConsole());
+                    SuccessOutput();                    
                     break;
                 case 2:
                     Choice(choice, ConsoleMenu.Pharmacies, "аптеку", new PharmacyConsole());
+                    SuccessOutput();
                     break;
                 case 3:
                     Choice(choice, ConsoleMenu.Warehouses, "склад", new WarehouseConsole());
+                    SuccessOutput();
                     break;
                 case 4:
                     Choice(choice, ConsoleMenu.Consignments, "партию", new ConsignmentConsole());
+                    SuccessOutput();
                     break;
                 case 5:
                     //ToDo: Вывод списка товаров и их количества в выбранной аптеке
                     break;
                 case 6:
                     Tools.InitializeDatabase();
-                    Console.WriteLine("База данных успешно создана. Нажмите любую клавишу для продолжения");
-                    Console.ReadLine();
+                    SuccessOutput();
                     break;
                 case 7:
                     exit = true;
@@ -86,7 +89,7 @@ namespace SpargoTest
         /// <param name="subMenuTitle">Заголовок подменю</param>
         /// <param name="subMenuName">Имя меню</param>
         /// <param name="input">Интерфейс для ввода данных</param>
-        private static void Choice<T>(int choice, string subMenuTitle, string subMenuName, IInput<T> input) where T : class
+        private static void Choice<T>(int choice, string subMenuTitle, string subMenuName, IOutput<T> input) where T : class
         {
             var subMenu = new ConsoleSubMenu { Title = subMenuTitle + ":", Items = Tools.Menu.GetSubMenu(subMenuName) };
             var items = Tools.Storage.GetAll<T>(out Result result);
@@ -98,6 +101,15 @@ namespace SpargoTest
 
             if (proceed)
                 Tools.Menu.Action(choice, Tools.Storage, input);
+        }
+
+        /// <summary>
+        /// Консольный вывод об успехе операции
+        /// </summary>
+        private static void SuccessOutput()
+        {
+            Console.WriteLine("Операция выполнена успешно. Нажмите любую клавишу.");
+            Console.ReadLine();
         }
     }
 }

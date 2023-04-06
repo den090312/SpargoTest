@@ -6,47 +6,25 @@ using System.Threading.Tasks;
 
 using SpargoTest.Interfaces;
 using SpargoTest.Models;
+using SpargoTest.Services;
 
 namespace SpargoTest.CustomConsole
 {
     /// <summary>
     /// Консольный функционал для партий товара
     /// </summary>
-    public class ConsignmentConsole : IInput<Consignment>
+    public class ConsignmentConsole : IOutput<Consignment>
     {
         /// <summary>
         /// Создание партии через консоль
         /// </summary>
         /// <returns>Партия товара</returns>
-        public Consignment Input()
+        public Consignment Output()
         {
             var consignment = new Consignment();
 
-            var productId = 0;
-
-            Console.WriteLine("Введите идентификатор продукта:");
-
-            while (!int.TryParse(Console.ReadLine(), out productId))
-            {
-                Console.WriteLine("Неверный формат идентификатора продукта. Пожалуйста, введите целое число.");
-            }
-
-            //ToDo: проверить существование продукта по этому идентификатору
-
-            consignment.ProductId = productId;
-
-            var warehouseId = 0;
-
-            Console.WriteLine("Введите идентификатор склада:");
-
-            while (!int.TryParse(Console.ReadLine(), out warehouseId))
-            {
-                Console.WriteLine("Неверный формат идентификатора склада. Пожалуйста, введите целое число.");
-            }
-
-            //ToDo: проверить существование склада по этому идентификатору
-
-            consignment.WarehouseId = warehouseId;
+            consignment.ProductId = Tools.CheckId<Product>("Введите идентификатор товара:");
+            consignment.WarehouseId = Tools.CheckId<Warehouse>("Введите идентификатор склада:");
 
             return consignment;
         }

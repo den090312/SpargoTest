@@ -11,7 +11,7 @@
         public int Id { get; set; }
 
         /// <summary>
-        /// Идентификатор продукта
+        /// Идентификатор товара
         /// </summary>
         public int? ProductId { get; set; }
 

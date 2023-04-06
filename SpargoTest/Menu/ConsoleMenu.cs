@@ -28,7 +28,7 @@ namespace SpargoTest.Menu
         public static string DeleteTitle { get; } = "Удалить";
 
         /// <summary>
-        /// Заголовок списка продуктов
+        /// Заголовок списка товаров
         /// </summary>
         public static string Products { get; } = $"{_listTitle} товарных наименований";
 
@@ -95,7 +95,7 @@ namespace SpargoTest.Menu
         /// <param name="choice">Выбор опции для действия с объектом</param>
         /// <param name="crud">Набор операций с объектом</param>
         /// <param name="input">Интерфейс ввода</param>
-        public void Action<T>(int choice, ICrud crud, IInput<T> input)
+        public void Action<T>(int choice, ICrud crud, IOutput<T> input)
         {
             if (choice == 2)
                 Delete<T>(crud);
@@ -103,9 +103,7 @@ namespace SpargoTest.Menu
             if (choice != 1)
                 return;
 
-            crud.Create<T>(input.Input(), out Result crudResult);
-
-            SuccessMessage(crudResult);
+            crud.Create<T>(input.Output(), out Result result);
         }
 
         /// <summary>
@@ -142,16 +140,6 @@ namespace SpargoTest.Menu
         }
 
         /// <summary>
-        /// Вывод сообщения об успешном выполнении операции
-        /// </summary>
-        /// <param name="result">Результат операции</param>
-        private static void SuccessMessage(Result result)
-        {
-            if (result.Success)
-                Console.WriteLine("Операция выполнена успешно");
-        }
-
-        /// <summary>
         /// Удаление объекта
         /// </summary>
         /// <typeparam name="T">Тип удаляемого объекта</typeparam>
@@ -171,8 +159,6 @@ namespace SpargoTest.Menu
                     exit = true;
 
                     crud.Remove<T>(Id, out Result result);
-
-                    SuccessMessage(result);
                 }
             }
         }

@@ -6,34 +6,24 @@ using System.Threading.Tasks;
 
 using SpargoTest.Interfaces;
 using SpargoTest.Models;
+using SpargoTest.Services;
 
 namespace SpargoTest.CustomConsole
 {
     /// <summary>
     /// Консольный функционал для складов
     /// </summary>
-    public class WarehouseConsole : IInput<Warehouse>
+    public class WarehouseConsole : IOutput<Warehouse>
     {
         /// <summary>
         /// Создание склада через консоль
         /// </summary>
-        /// <returns></returns>
-        public Warehouse Input()
+        /// <returns>Склад</returns>
+        public Warehouse Output()
         {
             var warehouse = new Warehouse();
 
-            var pharmacyId = 0;
-
-            Console.WriteLine("Введите идентификатор аптеки:");
-
-            while (!int.TryParse(Console.ReadLine(), out pharmacyId))
-            {
-                Console.WriteLine("Неверный формат идентификатора аптеки. Пожалуйста, введите целое число.");
-            }
-
-            //ToDo: проверить существование аптеки по этому идентификатору
-            
-            warehouse.PharmacyId = pharmacyId;
+            warehouse.PharmacyId = Tools.CheckId<Pharmacy>("Введите идентификатор аптеки:");
 
             Console.WriteLine("Введите наименование склада:");
             warehouse.Name = Console.ReadLine();

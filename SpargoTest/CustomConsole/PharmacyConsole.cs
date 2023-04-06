@@ -6,13 +6,13 @@ namespace SpargoTest.CustomConsole
     /// <summary>
     /// Консольный функционал для аптек
     /// </summary>
-    public class PharmacyConsole : IInput<Pharmacy>
+    public class PharmacyConsole : IOutput<Pharmacy>
     {
         /// <summary>
         /// Создание аптеки через консоль
         /// </summary>
         /// <returns>Аптека</returns>
-        public Pharmacy Input()
+        public Pharmacy Output()
         {
             var pharmacy = new Pharmacy();
 
