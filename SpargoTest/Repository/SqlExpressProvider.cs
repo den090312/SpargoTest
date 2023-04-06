@@ -167,11 +167,7 @@ namespace SpargoTest.Repository
 
             using (var connection = new SqlConnection(DatabaseConnectionString))
             {
-                var query = "SELECT Product.Id AS Id, Product.Name AS Name, COUNT(Consignment.Id) AS ProductCount FROM Product " +
-                    "JOIN Consignment ON Product.Id = Consignment.ProductId " +
-                    "JOIN Warehouse ON Consignment.WarehouseId = Warehouse.Id " +
-                    "WHERE Warehouse.PharmacyId = @PharmacyId " +
-                    "GROUP BY Product.Name";
+                var query = "SELECT Product.Id AS Id, Product.Name AS Name, COUNT(Consignment.Id) AS ProductCount FROM Product JOIN Consignment ON Product.Id = Consignment.ProductId JOIN Warehouse ON Consignment.WarehouseId = Warehouse.Id WHERE Warehouse.PharmacyId = @PharmacyId GROUP BY Product.Id, Product.Name";
 
                 var parameters = new[] { new SqlParameter("@PharmacyId", pharmacyId) };
                 var reader = GetReader(connection, parameters, query, out Result result);

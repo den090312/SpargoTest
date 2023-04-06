@@ -98,12 +98,16 @@ namespace SpargoTest.Menu
         public void Action<T>(int choice, ICrud crud, IPanel<T> panel)
         {
             if (choice == 2)
+            {
                 Delete<T>(crud);
+                Tools.SuccessOutput();
+            }
 
             if (choice != 1)
                 return;
 
             crud.Create<T>(panel.Get(), out Result result);
+            Tools.SuccessOutput();
         }
 
         /// <summary>

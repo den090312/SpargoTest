@@ -39,28 +39,24 @@ namespace SpargoTest
             {
                 case 1:
                     Choice(choice, ConsoleMenu.Products, "товар", new ProductPanel());
-                    SuccessOutput();                    
                     break;
                 case 2:
                     Choice(choice, ConsoleMenu.Pharmacies, "аптеку", new PharmacyPanel());
-                    SuccessOutput();
                     break;
                 case 3:
                     Choice(choice, ConsoleMenu.Warehouses, "склад", new WarehousePanel());
-                    SuccessOutput();
                     break;
                 case 4:
                     Choice(choice, ConsoleMenu.Consignments, "партию", new ConsignmentPanel());
-                    SuccessOutput();
                     break;
                 case 5:
                     var pharmacyId = Tools.CheckId<Pharmacy>("Введите идентификатор аптеки:");
                     var products = Tools.GetProductsByPharmacy(pharmacyId);
                     Tools.Output(products);
+                    Tools.SuccessOutput();
                     break;
                 case 6:
                     Tools.InitializeDatabase();
-                    SuccessOutput();
                     break;
                 case 7:
                     exit = true;
@@ -104,15 +100,6 @@ namespace SpargoTest
 
             if (proceed)
                 Tools.Menu.Action(choice, Tools.Storage, input);
-        }
-
-        /// <summary>
-        /// Консольный вывод об успехе операции
-        /// </summary>
-        private static void SuccessOutput()
-        {
-            Tools.Terminal.Output("Операция выполнена успешно. Нажмите любую клавишу.");
-            Tools.Terminal.Input();
         }
     }
 }

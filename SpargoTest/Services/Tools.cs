@@ -54,6 +54,15 @@ namespace SpargoTest.Services
             => new SqlExpressProvider().GetProductsByPharmacy(pharmacyId);
 
         /// <summary>
+        /// Консольный вывод об успехе операции
+        /// </summary>
+        public static void SuccessOutput()
+        {
+            Tools.Terminal.Output("Операция выполнена успешно. Нажмите любую клавишу.");
+            Tools.Terminal.Input();
+        }
+
+        /// <summary>
         /// Получение корневого каталога для текущего запуска приложения
         /// </summary>
         /// <returns>Корневой каталог приложения</returns>
