@@ -53,6 +53,8 @@ namespace SpargoTest
                     break;
                 case 6:
                     Tools.InitializeDatabase();
+                    Console.WriteLine("База данных успешно создана. Нажмите любую клавишу для продолжения");
+                    Console.ReadLine();
                     break;
                 case 7:
                     exit = true;

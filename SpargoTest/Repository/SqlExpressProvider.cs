@@ -16,7 +16,7 @@ namespace SpargoTest.Repository
         /// Строка подключения к серверу
         /// </summary>
         private string _serverConnectionString = "Server=(localdb)\\mssqllocaldb;Trusted_Connection=True;";
-        
+
         /// <summary>
         /// Имя базы данных
         /// </summary>
@@ -30,12 +30,12 @@ namespace SpargoTest.Repository
         /// <summary>
         /// Полное имя файла базы данных
         /// </summary>
-        public string DatabaseFileName => Path.Combine(Tools.BaseDirectory(), _databaseName + ".mdf");
+        public string DatabaseFileName => Path.Combine(Tools.BaseDirectory(), $"{_databaseName}.mdf");
 
         /// <summary>
         /// Полное имя лога базы данных
         /// </summary>
-        public string LogFileName => Path.ChangeExtension($"{DatabaseFileName}_log", ".ldf");
+        public string LogFileName => Path.Combine(Tools.BaseDirectory(), $"{_databaseName}_log.ldf");
 
         /// <summary>
         /// Конструктор провайдера базы данных SQL Server Express
@@ -274,12 +274,6 @@ namespace SpargoTest.Repository
         /// </summary>
         private void CreateDatabase()
         {
-            if (File.Exists(DatabaseFileName))
-                File.Delete(DatabaseFileName);
-
-            if (File.Exists(LogFileName))
-                File.Delete(LogFileName);
-
             using var connection = new SqlConnection(_serverConnectionString);
             connection.Open();
 
@@ -292,8 +286,13 @@ namespace SpargoTest.Repository
                 }
             }
 
-            var commandText = $"CREATE DATABASE {_databaseName} ON PRIMARY " +
-                $"(NAME={_databaseName}, FILENAME='{DatabaseFileName}')";
+            if (File.Exists(DatabaseFileName))
+                File.Delete(DatabaseFileName);
+
+            if (File.Exists(LogFileName))
+                File.Delete(LogFileName);
+
+            var commandText = $"CREATE DATABASE {_databaseName} ON PRIMARY (NAME={_databaseName}, FILENAME='{DatabaseFileName}')";
             var createCommand = new SqlCommand(commandText, connection);
             createCommand.ExecuteNonQuery();      
         }

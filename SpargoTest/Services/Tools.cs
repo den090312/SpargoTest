@@ -12,7 +12,7 @@ namespace SpargoTest.Services
     public static class Tools
     {
         /// <summary>
-        /// Провайдер базы данных
+        /// Текущий провайдер базы данных
         /// </summary>
         private static IDatabaseProvider _databaseProvider = new SqlExpressProvider();
 
