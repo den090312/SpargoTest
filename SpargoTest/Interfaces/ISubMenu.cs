@@ -6,12 +6,12 @@
     public interface ISubMenu
     {
         /// <summary>
-        /// Заголовок пункта подменю
+        /// Заголовок подменю
         /// </summary>
         public string? Title { get; set; }
 
         /// <summary>
-        /// Список подпунктов подменю
+        /// Список пунктов подменю
         /// </summary>
         public IEnumerable<string?> Items { get; set; }
     }

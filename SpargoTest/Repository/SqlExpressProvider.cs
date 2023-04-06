@@ -123,7 +123,7 @@ namespace SpargoTest.Repository
             using (var connection = new SqlConnection(DatabaseConnectionString))
             {
                 var parameters = new[] { new SqlParameter("@Id", Id) };
-                var reader = ExecuteReader<T>(connection, parameters, $"SELECT * FROM {typeof(T).Name} WHERE Id = @id", out result);
+                var reader = GetReader<T>(connection, parameters, $"SELECT * FROM {typeof(T).Name} WHERE Id = @id", out result);
 
                 if (reader == null)
                     return default;
@@ -166,7 +166,7 @@ namespace SpargoTest.Repository
 
             using (var connection = new SqlConnection(DatabaseConnectionString))
             {
-                var reader = ExecuteReader<T>(connection, $"SELECT * FROM {typeof(T).Name}", out result);
+                var reader = GetReader<T>(connection, $"SELECT * FROM {typeof(T).Name}", out result);
 
                 if (reader == null)
                     return Enumerable.Empty<T>();
@@ -235,7 +235,7 @@ namespace SpargoTest.Repository
         {
             Result result;
 
-            var count = ExecuteScalar($"SELECT COUNT(*) FROM sys.databases WHERE name = '{_databaseName}'", out result);
+            var count = GetScalar($"SELECT COUNT(*) FROM sys.databases WHERE name = '{_databaseName}'", out result);
             
             if (count != null && (int)count > 0)
                 ExecuteNonQuery($"DROP DATABASE {_databaseName}", out result);
@@ -255,7 +255,7 @@ namespace SpargoTest.Repository
         /// <param name="query">Код запроса</param>
         /// <param name="result">Результат операции</param>
         /// <returns>Скларяное значение</returns>
-        private object? ExecuteScalar(string query, out Result result)
+        private object? GetScalar(string query, out Result result)
         {
             using (var connection = new SqlConnection(DatabaseConnectionString))
             {
@@ -287,7 +287,7 @@ namespace SpargoTest.Repository
         /// <param name="query">Код выполнения запроса на считывание</param>
         /// <param name="result">Результат<</param>
         /// <returns>Считыватель</returns>
-        private SqlDataReader? ExecuteReader<T>(SqlConnection connection, SqlParameter[] parameters, string query, out Result result)
+        private SqlDataReader? GetReader<T>(SqlConnection connection, SqlParameter[] parameters, string query, out Result result)
         {
             connection.Open();
 
@@ -315,7 +315,7 @@ namespace SpargoTest.Repository
         /// <param name="query">Код выполнения запроса на считывание</param>
         /// <param name="result">Результат<</param>
         /// <returns>Считыватель</returns>
-        private SqlDataReader? ExecuteReader<T>(SqlConnection connection, string query, out Result result)
+        private SqlDataReader? GetReader<T>(SqlConnection connection, string query, out Result result)
         {
             connection.Open();
 
@@ -426,7 +426,7 @@ namespace SpargoTest.Repository
                 createTablesQuery.AppendLine($"CREATE TABLE {className} (");
 
                 foreach (var property in classType.GetProperties())
-                    SetForeignKeys(createTablesQuery, foreignKeysQuery, className, property);
+                    SetKeys(createTablesQuery, foreignKeysQuery, className, property);
 
                 createTablesQuery.Length -= 3;
                 createTablesQuery.AppendLine(");");
@@ -442,13 +442,13 @@ namespace SpargoTest.Repository
         }
 
         /// <summary>
-        /// Установка внешних ключей
+        /// Установка ключей
         /// </summary>
-        /// <param name="createTablesQuery">Код создания таблиц</param>
+        /// <param name="createTablesQuery">Код создания первичных ключей</param>
         /// <param name="foreignKeysQuery">Код создания внешних ключей</param>
         /// <param name="className">Имя модели для маппинга в БД</param>
         /// <param name="property">Свойство модели для маппинга в БД</param>
-        private void SetForeignKeys(StringBuilder createTablesQuery, StringBuilder foreignKeysQuery, string className, PropertyInfo property)
+        private void SetKeys(StringBuilder createTablesQuery, StringBuilder foreignKeysQuery, string className, PropertyInfo property)
         {
             var columnName = property.Name;
             var columnType = GetSqlServerType(property.PropertyType);
@@ -476,7 +476,7 @@ namespace SpargoTest.Repository
         /// <returns></returns>
         private bool TableExists(string tableName)
         {
-            var scalarResult = ExecuteScalar($"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{tableName}'", out Result result);
+            var scalarResult = GetScalar($"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{tableName}'", out Result result);
 
             if (!result.Success)
                 return false;

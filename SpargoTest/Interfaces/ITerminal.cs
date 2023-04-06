@@ -15,6 +15,6 @@
         /// Вывод сообщения
         /// </summary>
         /// <param name="message">Текст сообщения</param>
-        void Output(string message);
+        void Output(string? message);
     }
 }

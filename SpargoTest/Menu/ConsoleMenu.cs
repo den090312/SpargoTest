@@ -94,8 +94,8 @@ namespace SpargoTest.Menu
         /// <typeparam name="T">Тип объекта действия</typeparam>
         /// <param name="choice">Выбор опции для действия с объектом</param>
         /// <param name="crud">Набор операций с объектом</param>
-        /// <param name="input">Интерфейс ввода</param>
-        public void Action<T>(int choice, ICrud crud, IPanel<T> input)
+        /// <param name="panel">Панель данных</param>
+        public void Action<T>(int choice, ICrud crud, IPanel<T> panel)
         {
             if (choice == 2)
                 Delete<T>(crud);
@@ -103,7 +103,7 @@ namespace SpargoTest.Menu
             if (choice != 1)
                 return;
 
-            crud.Create<T>(input.Get(), out Result result);
+            crud.Create<T>(panel.Get(), out Result result);
         }
 
         /// <summary>

@@ -47,13 +47,6 @@
         public string? ErrorMessage { get; set; } = default;
 
         /// <summary>
-        /// Конструктор результата операции без параметров
-        /// </summary>
-        public Result()
-        {
-        }
-
-        /// <summary>
         /// Конструктор результата операции
         /// </summary>
         /// <param name="operation">Тип операции</param>
