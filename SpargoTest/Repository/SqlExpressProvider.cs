@@ -25,7 +25,7 @@ namespace SpargoTest.Repository
         /// <summary>
         /// Строка подключения к базе данных SQL Server Express
         /// </summary>
-        public string DatabaseConnectionString => $"{_serverConnectionString}Database=SpargoTest;";
+        public string DatabaseConnectionString => $"{_serverConnectionString}Database={_databaseName};";
 
         /// <summary>
         /// Полное имя файла базы данных
@@ -72,8 +72,8 @@ namespace SpargoTest.Repository
         /// </summary>
         /// <typeparam name="T">Тип записываемого объекта</typeparam>
         /// <param name="obj">Объект для записи</param>
-        /// <param name="crudResult">Возможнеы ошибки при записи</param>
-        public void Add<T>(T obj, out Result crudResult)
+        /// <param name="result">Возможнеы ошибки при записи</param>
+        public void Add<T>(T obj, out Result result)
         {
             var type = typeof(T);
             var properties = type.GetProperties().Where(p => p.Name != "Id");
@@ -85,31 +85,12 @@ namespace SpargoTest.Repository
             foreach (var property in properties)
                 parameters.Add(new SqlParameter("@" + property.Name, property.GetValue(obj)));
 
-            var rowsAffected = 0;
-
-            using (var connection = new SqlConnection(DatabaseConnectionString))
-            {
-                connection.Open();
-
-                using var command = new SqlCommand(commandText, connection);
-                command.Parameters.AddRange(parameters.ToArray());
-
-                try
-                {
-                    rowsAffected = command.ExecuteNonQuery();
-                }
-                catch (Exception ex)
-                {
-                    crudResult = new Result(CrudOperation.Create, ex.Message);
-
-                    return;
-                }
-            }
+            var rowsAffected = ExecuteNonQuery(commandText, parameters.ToArray(), out result);
 
             if (rowsAffected > 0)
-                crudResult = new Result(CrudOperation.Create);
+                result = new Result(CrudOperation.Create);
             else
-                crudResult = new Result(CrudOperation.Create, "Ошибка при добавлении объекта в базу данных");
+                result = new Result(CrudOperation.Create, "Ошибка при добавлении объекта в базу данных");
         }
 
         /// <summary>
@@ -117,42 +98,27 @@ namespace SpargoTest.Repository
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="Id">Идентификатор объекта</param>
-        /// <param name="crudResult"></param>
+        /// <param name="result"></param>
         /// <returns>Получаемый объект</returns>
-        public T? Get<T>(int Id, out Result crudResult)
+        public T? Get<T>(int Id, out Result result)
         {
             var data = new Dictionary<string, object>();
 
-            using (var connection = new SqlConnection(DatabaseConnectionString))
+            var reader = ExecuteReader<T>($"SELECT * FROM {typeof(T).Name} WHERE Id = @id", out result);
+            
+            if (reader == null)
+                return default;
+
+            if (reader.Read())
             {
-                connection.Open();
-
-                using var command = new SqlCommand($"SELECT * FROM {typeof(T).Name} WHERE Id = @id", connection);
-
-                command.Parameters.AddWithValue("@id", Id);
-
-                try
-                {
-                    using var reader = command.ExecuteReader();
-
-                    if (reader.Read())
-                    {
-                        for (int i = 0; i < reader.FieldCount; i++)
-                            data.Add(reader.GetName(i), reader.GetValue(i));
-                    }
-                    else
-                    {
-                        crudResult = new Result(CrudOperation.Read, "Объект не найден в БД");
-
-                        return default;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    crudResult = new Result(CrudOperation.Read, ex.Message);
-
-                    return default;
-                }
+                for (int i = 0; i < reader.FieldCount; i++)
+                    data.Add(reader.GetName(i), reader.GetValue(i));
+            }
+            else
+            {
+                result = new Result(CrudOperation.Read, "Объект не найден в БД");
+                
+                return default;
             }
 
             var item = Activator.CreateInstance<T>();
@@ -163,8 +129,8 @@ namespace SpargoTest.Repository
                     property.SetValue(item, data[property.Name]);
             }
 
-            crudResult = new Result(CrudOperation.Read);
-
+            result = new Result(CrudOperation.Read);
+            
             return item;
         }
 
@@ -178,31 +144,19 @@ namespace SpargoTest.Repository
         {
             var data = new List<Dictionary<string, object>>();
 
-            using (var connection = new SqlConnection(DatabaseConnectionString))
+            var reader = ExecuteReader<T>($"SELECT * FROM {typeof(T).Name}", out result);
+
+            if (reader == null)
+                return Enumerable.Empty<T>();
+
+            while (reader.Read())
             {
-                connection.Open();
-                using var command = new SqlCommand($"SELECT * FROM {typeof(T).Name}", connection);
+                var rowData = new Dictionary<string, object>();
 
-                try
-                {
-                    using var reader = command.ExecuteReader();
+                for (int i = 0; i < reader.FieldCount; i++)
+                    rowData.Add(reader.GetName(i), reader.GetValue(i));
 
-                    while (reader.Read())
-                    {
-                        var rowData = new Dictionary<string, object>();
-
-                        for (int i = 0; i < reader.FieldCount; i++)
-                            rowData.Add(reader.GetName(i), reader.GetValue(i));
-
-                        data.Add(rowData);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    result = new Result(CrudOperation.Read, ex.Message);
-
-                    return Enumerable.Empty<T>();
-                }
+                data.Add(rowData);
             }
 
             var objects = new List<T>();
@@ -241,27 +195,9 @@ namespace SpargoTest.Repository
             }
 
             var commandText = $"DELETE FROM {typeof(T).Name} WHERE Id = @Id";
+            var parameters = new[] { new SqlParameter("@Id", Id) };
 
-            var rowsAffected = 0;
-
-            using (var connection = new SqlConnection(DatabaseConnectionString))
-            {
-                connection.Open();
-
-                using var command = new SqlCommand(commandText, connection);
-                command.Parameters.Add(new SqlParameter("@Id", Id));
-
-                try
-                {
-                    rowsAffected = command.ExecuteNonQuery();
-                }
-                catch (Exception ex)
-                {
-                    result = new Result(CrudOperation.Delete, ex.Message);
-
-                    return;
-                }
-            }
+            var rowsAffected = ExecuteNonQuery(commandText, parameters, out result);
 
             if (rowsAffected > 0)
                 result = new Result(CrudOperation.Delete);
@@ -274,27 +210,138 @@ namespace SpargoTest.Repository
         /// </summary>
         private void CreateDatabase()
         {
-            using var connection = new SqlConnection(_serverConnectionString);
-            connection.Open();
+            Result result;
 
-            using (var command = new SqlCommand($"SELECT COUNT(*) FROM sys.databases WHERE name = '{_databaseName}'", connection))
-            {
-                if ((int)command.ExecuteScalar() > 0)
-                {
-                    using var dropCommand = new SqlCommand($"DROP DATABASE {_databaseName}", connection);
-                    dropCommand.ExecuteNonQuery();
-                }
-            }
+            var count = ExecuteScalar($"SELECT COUNT(*) FROM sys.databases WHERE name = '{_databaseName}'", out result);
+            
+            if (count != null && (int)count > 0)
+                ExecuteNonQuery($"DROP DATABASE {_databaseName}", out result);
 
             if (File.Exists(DatabaseFileName))
                 File.Delete(DatabaseFileName);
 
             if (File.Exists(LogFileName))
                 File.Delete(LogFileName);
+            
+            ExecuteNonQuery($"CREATE DATABASE {_databaseName} ON PRIMARY (NAME={_databaseName}, FILENAME='{DatabaseFileName}')", out result);
+        }
 
-            var commandText = $"CREATE DATABASE {_databaseName} ON PRIMARY (NAME={_databaseName}, FILENAME='{DatabaseFileName}')";
-            var createCommand = new SqlCommand(commandText, connection);
-            createCommand.ExecuteNonQuery();      
+        /// <summary>
+        /// Получение склярного значения
+        /// </summary>
+        /// <param name="query">Код запроса</param>
+        /// <param name="result">Результат операции</param>
+        /// <returns>Скларяное значение</returns>
+        private object? ExecuteScalar(string query, out Result result)
+        {
+            using (var connection = new SqlConnection(DatabaseConnectionString))
+            {
+                connection.Open();
+
+                using var command = new SqlCommand(query, connection);
+
+                try
+                {
+                    result = new Result(CrudOperation.Read);
+
+                    return command.ExecuteScalar();
+                }
+                catch (Exception ex)
+                {
+                    result = new Result(CrudOperation.Read, ex.Message);
+
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Получение считывателя данных БД
+        /// </summary>
+        /// <typeparam name="T">Тип считываемого объекта</typeparam>
+        /// <param name="query">Код выполнения запроса на считывание</param>
+        /// <param name="result">Результат<</param>
+        /// <returns>Считыватель</returns>
+        private SqlDataReader? ExecuteReader<T>(string query, out Result result)
+        {
+            using (var connection = new SqlConnection(DatabaseConnectionString))
+            {
+                connection.Open();
+                using var command = new SqlCommand(query, connection);
+
+                try
+                {
+                    result = new Result(CrudOperation.Read);
+
+                    return command.ExecuteReader();
+                }
+                catch (Exception ex)
+                {
+                    result = new Result(CrudOperation.Read, ex.Message);
+                    
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Выполнение кода SQL
+        /// </summary>
+        /// <param name="query">Код выполнения</param>
+        /// <param name="parameters">Параметры</param>
+        /// <param name="result">Результат выполнения</param>
+        /// <returns>Количество затронутых строк в БД</returns>
+        private int ExecuteNonQuery(string query, SqlParameter[] parameters, out Result result)
+        {
+            using (var connection = new SqlConnection(DatabaseConnectionString))
+            {
+                connection.Open();
+                
+                using var command = new SqlCommand(query, connection);
+                command.Parameters.AddRange(parameters);
+
+                try
+                {
+                    result = new Result(CrudOperation.Read);
+
+                    return command.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    result = new Result(CrudOperation.Read, ex.Message);
+                    
+                    return 0;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Выполнение кода SQL
+        /// </summary>
+        /// <param name="query">Код выполнения</param>
+        /// <param name="result">Результат выполнения</param>
+        /// <returns>Количество затронутых строк в БД</returns>
+        private int ExecuteNonQuery(string query, out Result result)
+        {
+            using (var connection = new SqlConnection(DatabaseConnectionString))
+            {
+                connection.Open();
+
+                using var command = new SqlCommand(query, connection);
+
+                try
+                {
+                    result = new Result(CrudOperation.Read);
+
+                    return command.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    result = new Result(CrudOperation.Read, ex.Message);
+
+                    return 0;
+                }
+            }
         }
 
         /// <summary>
@@ -337,29 +384,10 @@ namespace SpargoTest.Repository
             if (createTablesQuery.Length == 0)
                 return;
 
-            ExecuteTablesCreation(createTablesQuery, foreignKeysQuery);
-        }
-
-        /// <summary>
-        /// Запуск создания таблиц
-        /// </summary>
-        /// <param name="createTablesQuery">Код создания таблиц</param>
-        /// <param name="foreignKeysQuery">Код создания внешних ключей</param>
-        private void ExecuteTablesCreation(StringBuilder createTablesQuery, StringBuilder foreignKeysQuery)
-        {
-            var connection = new SqlConnection(DatabaseConnectionString);
-            connection.Open();
-
-            using (var command = new SqlCommand(createTablesQuery.ToString(), connection))
-            {
-                command.ExecuteNonQuery();
-            }
+            ExecuteNonQuery(createTablesQuery.ToString(), out Result result);
 
             if (foreignKeysQuery.Length > 0)
-            {
-                using var fkCommand = new SqlCommand(foreignKeysQuery.ToString(), connection);
-                fkCommand.ExecuteNonQuery();
-            }
+                ExecuteNonQuery(foreignKeysQuery.ToString(), out result);
         }
 
         /// <summary>
@@ -397,13 +425,15 @@ namespace SpargoTest.Repository
         /// <returns></returns>
         private bool TableExists(string tableName)
         {
-            using var connection = new SqlConnection(DatabaseConnectionString);
-            connection.Open();
+            var scalarResult = ExecuteScalar($"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{tableName}'", out Result result);
 
-            using var command = new SqlCommand($"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{tableName}'", connection);
-            var result = (int)command.ExecuteScalar();
+            if (!result.Success)
+                return false;
 
-            return result > 0 ? true : false;
+            if (scalarResult is int count)
+                return count > 0;
+            
+            return false;
         }
 
         /// <summary>
