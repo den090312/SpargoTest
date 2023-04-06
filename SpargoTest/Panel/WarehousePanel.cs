@@ -11,22 +11,22 @@ using SpargoTest.Services;
 namespace SpargoTest.CustomConsole
 {
     /// <summary>
-    /// Консольный функционал для складов
+    /// Панель создания склада
     /// </summary>
-    public class WarehouseConsole : IOutput<Warehouse>
+    public class WarehousePanel : IPanel<Warehouse>
     {
         /// <summary>
-        /// Создание склада через консоль
+        /// Получение склада
         /// </summary>
         /// <returns>Склад</returns>
-        public Warehouse Output()
+        public Warehouse Get()
         {
             var warehouse = new Warehouse();
 
             warehouse.PharmacyId = Tools.CheckId<Pharmacy>("Введите идентификатор аптеки:");
 
-            Console.WriteLine("Введите наименование склада:");
-            warehouse.Name = Console.ReadLine();
+            Tools.Terminal.Output("Введите наименование склада:");
+            warehouse.Name = Tools.Terminal.Input();
 
             return warehouse;
         }

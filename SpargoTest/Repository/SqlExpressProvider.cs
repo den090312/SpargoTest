@@ -46,7 +46,7 @@ namespace SpargoTest.Repository
         {
             if (!ServerOnline())
             {
-                Console.WriteLine("Не удалось соединиться с сервером");
+                Tools.Terminal.Output("Не удалось соединиться с сервером");
 
                 return;
             }

@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Data.SqlClient;
 
+using SpargoTest.CustomConsole;
 using SpargoTest.Interfaces;
 using SpargoTest.Menu;
 using SpargoTest.Repository;
@@ -13,9 +14,14 @@ namespace SpargoTest.Services
     public static class Tools
     {
         /// <summary>
-        /// Текущий провайдер базы данных
+        /// Провайдер базы данных
         /// </summary>
         private static IDatabaseProvider _databaseProvider = new SqlExpressProvider();
+
+        /// <summary>
+        /// Терминал
+        /// </summary>
+        public static ITerminal Terminal => new ConsoleTerminal();
 
         /// <summary>
         /// Инициализация базы данных
@@ -28,7 +34,7 @@ namespace SpargoTest.Services
         public static ICrud Storage => new Storage(_databaseProvider);
 
         /// <summary>
-        /// Консольное меню
+        /// Меню
         /// </summary>
         public static IMainMenu Menu => new ConsoleMenu();
 
@@ -53,7 +59,7 @@ namespace SpargoTest.Services
         }
 
         /// <summary>
-        /// Консольный вывод свойств класса
+        /// Вывод свойств класса
         /// </summary>
         /// <typeparam name="T">Тип класса</typeparam>
         /// <param name="items">Перечень объектов класса</param>
@@ -64,7 +70,7 @@ namespace SpargoTest.Services
                 var properties = typeof(T).GetProperties();
                 var values = properties.Select(p => $"{p.Name}: '{p.GetValue(item)}'");
 
-                Console.WriteLine(string.Join(", ", values));
+                Tools.Terminal.Output(string.Join(", ", values));
             }
         }
 
@@ -86,7 +92,7 @@ namespace SpargoTest.Services
 
                 if (!result.Success)
                 {
-                    Console.WriteLine($"Объект с идентификатором {id} не найден.");
+                    Tools.Terminal.Output($"Объект с идентификатором {id} не найден.");
 
                     continue;
                 }
@@ -98,7 +104,7 @@ namespace SpargoTest.Services
         }
 
         /// <summary>
-        /// Получение значения из консоли
+        /// Получение значения
         /// </summary>
         /// <typeparam name="T">Тип значения</typeparam>
         /// <param name="message">Сообщение для ввода данных</param>
@@ -109,12 +115,12 @@ namespace SpargoTest.Services
 
             while (true)
             {
-                Console.WriteLine(message);
+                Tools.Terminal.Output(message);
 
-                if (Tools.StringTryParse(Console.ReadLine(), out value))
+                if (Tools.StringTryParse(Tools.Terminal.Input(), out value))
                     break;
 
-                Console.WriteLine("Введите корректное значение");
+                Tools.Terminal.Output("Введите корректное значение");
             }
 
             return value;

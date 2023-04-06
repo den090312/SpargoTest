@@ -9,15 +9,15 @@ using SpargoTest.Models;
 namespace SpargoTest.Interfaces
 {
     /// <summary>
-    /// Интерфейс для вывода объекта
+    /// Панель данных
     /// </summary>
-    /// <typeparam name="T">Тип объекта</typeparam>
-    public interface IOutput<T>
+    /// <typeparam name="T">Тип объекта панели</typeparam>
+    public interface IPanel<T>
     {
         /// <summary>
-        /// Вывод объекта
+        /// Получение объекта
         /// </summary>
         /// <returns>Получаемый объект</returns>
-        T Output();
+        T Get();
     }
 }

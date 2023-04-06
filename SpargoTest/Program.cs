@@ -20,8 +20,8 @@ namespace SpargoTest
             {
                 WriteMainMenu();
 
-                if (!int.TryParse(Console.ReadLine(), out int choice))
-                    Console.WriteLine("Неверный ввод. Пожалуйста, введите число от 1 до 6.");
+                if (!int.TryParse(Tools.Terminal.Input(), out int choice))
+                    Tools.Terminal.Output("Неверный ввод. Пожалуйста, введите число от 1 до 6.");
                 else
                     ChoiceProcessing(ref exit, choice);
             }
@@ -37,19 +37,19 @@ namespace SpargoTest
             switch (choice)
             {
                 case 1:
-                    Choice(choice, ConsoleMenu.Products, "товар", new ProductConsole());
+                    Choice(choice, ConsoleMenu.Products, "товар", new ProductPanel());
                     SuccessOutput();                    
                     break;
                 case 2:
-                    Choice(choice, ConsoleMenu.Pharmacies, "аптеку", new PharmacyConsole());
+                    Choice(choice, ConsoleMenu.Pharmacies, "аптеку", new PharmacyPanel());
                     SuccessOutput();
                     break;
                 case 3:
-                    Choice(choice, ConsoleMenu.Warehouses, "склад", new WarehouseConsole());
+                    Choice(choice, ConsoleMenu.Warehouses, "склад", new WarehousePanel());
                     SuccessOutput();
                     break;
                 case 4:
-                    Choice(choice, ConsoleMenu.Consignments, "партию", new ConsignmentConsole());
+                    Choice(choice, ConsoleMenu.Consignments, "партию", new ConsignmentPanel());
                     SuccessOutput();
                     break;
                 case 5:
@@ -66,36 +66,36 @@ namespace SpargoTest
         }
 
         /// <summary>
-        /// Вывод главное меню
+        /// Главное меню
         /// </summary>
         private static void WriteMainMenu()
         {
             Console.Clear();
-            Console.WriteLine("Главное меню:");
-            Console.WriteLine($"1. {ConsoleMenu.Products}");
-            Console.WriteLine($"2. {ConsoleMenu.Pharmacies}");
-            Console.WriteLine($"3. {ConsoleMenu.Warehouses}");
-            Console.WriteLine($"4. {ConsoleMenu.Consignments}");
-            Console.WriteLine("5. Вывести список товаров и их количество в выбранной аптеке");
-            Console.WriteLine("6. Пересоздать базу данных");
-            Console.WriteLine("7. Выход");
+            Tools.Terminal.Output("Главное меню:");
+            Tools.Terminal.Output($"1. {ConsoleMenu.Products}");
+            Tools.Terminal.Output($"2. {ConsoleMenu.Pharmacies}");
+            Tools.Terminal.Output($"3. {ConsoleMenu.Warehouses}");
+            Tools.Terminal.Output($"4. {ConsoleMenu.Consignments}");
+            Tools.Terminal.Output("5. Вывести список товаров и их количество в выбранной аптеке");
+            Tools.Terminal.Output("6. Пересоздать базу данных");
+            Tools.Terminal.Output("7. Выход");
         }
 
         /// <summary>
-        /// Обработка консольного выбора
+        /// Обработка выбора
         /// </summary>
         /// <typeparam name="T">Тип объекта</typeparam>
         /// <param name="choice">Опция выбора</param>
         /// <param name="subMenuTitle">Заголовок подменю</param>
         /// <param name="subMenuName">Имя меню</param>
         /// <param name="input">Интерфейс для ввода данных</param>
-        private static void Choice<T>(int choice, string subMenuTitle, string subMenuName, IOutput<T> input) where T : class
+        private static void Choice<T>(int choice, string subMenuTitle, string subMenuName, IPanel<T> input) where T : class
         {
             var subMenu = new ConsoleSubMenu { Title = subMenuTitle + ":", Items = Tools.Menu.GetSubMenu(subMenuName) };
             var items = Tools.Storage.GetAll<T>(out Result result);
 
             if (!result.Success)
-                Console.WriteLine($"Ошибка при получении {subMenuName}");
+                Tools.Terminal.Output($"Ошибка при получении {subMenuName}");
 
             Tools.Menu.Go(subMenu, items, out choice, out bool proceed);
 
@@ -108,8 +108,8 @@ namespace SpargoTest
         /// </summary>
         private static void SuccessOutput()
         {
-            Console.WriteLine("Операция выполнена успешно. Нажмите любую клавишу.");
-            Console.ReadLine();
+            Tools.Terminal.Output("Операция выполнена успешно. Нажмите любую клавишу.");
+            Tools.Terminal.Input();
         }
     }
 }

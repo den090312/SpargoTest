@@ -67,7 +67,7 @@ namespace SpargoTest.Menu
             {
                 WriteSubMenu(subMenu, items, out int menuItemsCount);
 
-                if (!int.TryParse(Console.ReadLine(), out choice))
+                if (!int.TryParse(Tools.Terminal.Input(), out choice))
                     WriteError(menuItemsCount);
                 else
                 {
@@ -95,7 +95,7 @@ namespace SpargoTest.Menu
         /// <param name="choice">Выбор опции для действия с объектом</param>
         /// <param name="crud">Набор операций с объектом</param>
         /// <param name="input">Интерфейс ввода</param>
-        public void Action<T>(int choice, ICrud crud, IOutput<T> input)
+        public void Action<T>(int choice, ICrud crud, IPanel<T> input)
         {
             if (choice == 2)
                 Delete<T>(crud);
@@ -103,7 +103,7 @@ namespace SpargoTest.Menu
             if (choice != 1)
                 return;
 
-            crud.Create<T>(input.Output(), out Result result);
+            crud.Create<T>(input.Get(), out Result result);
         }
 
         /// <summary>
@@ -123,20 +123,20 @@ namespace SpargoTest.Menu
         /// <param name="menuItemsCount">Количество пунктов подменю</param>
         private void WriteSubMenu<T>(ISubMenu subMenu, IEnumerable<T> items, out int menuItemsCount)
         {
-            Console.WriteLine(subMenu.Title);
+            Tools.Terminal.Output(subMenu.Title);
             Tools.Output(items);
 
             var i = 1;
 
             foreach (var item in subMenu.Items)
             {
-                Console.WriteLine($"{i}. {item}");
+                Tools.Terminal.Output($"{i}. {item}");
                 i++;
             }
 
             menuItemsCount = subMenu.Items.Count();
 
-            Console.WriteLine($"{menuItemsCount + 1}. Назад");
+            Tools.Terminal.Output($"{menuItemsCount + 1}. Назад");
         }
 
         /// <summary>
@@ -146,14 +146,14 @@ namespace SpargoTest.Menu
         /// <param name="crud">Набор операций с объектами</param>
         private static void Delete<T>(ICrud crud)
         {
-            Console.WriteLine("Введите идентификатор для удаления:");
+            Tools.Terminal.Output("Введите идентификатор для удаления:");
 
             var exit = false;
 
             while (!exit)
             {
-                if (!int.TryParse(Console.ReadLine(), out int Id))
-                    Console.WriteLine("Введите корректное число!");
+                if (!int.TryParse(Tools.Terminal.Input(), out int Id))
+                    Tools.Terminal.Output("Введите корректное число!");
                 else
                 {
                     exit = true;
@@ -170,7 +170,7 @@ namespace SpargoTest.Menu
         private static void WriteError(int count)
         {
             Console.Clear();
-            Console.WriteLine($"Неверный ввод. Пожалуйста, введите число от 1 до {count + 1}.");
+            Tools.Terminal.Output($"Неверный ввод. Пожалуйста, введите число от 1 до {count + 1}.");
         }
     }
 }

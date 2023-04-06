@@ -21,7 +21,7 @@
         /// <param name="choice">Выбор опции для действия с объектом</param>
         /// <param name="crud">Набор операций с объектом</param>
         /// <param name="io">Интерфейс ввода-вывода</param>
-        public void Action<T>(int choice, ICrud crud, IOutput<T> io);
+        public void Action<T>(int choice, ICrud crud, IPanel<T> io);
 
         /// <summary>
         /// Получение перечня подпунктов меню
