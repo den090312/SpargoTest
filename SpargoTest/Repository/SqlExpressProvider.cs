@@ -57,6 +57,8 @@ namespace SpargoTest.Repository
         /// </summary>
         public void Initialize()
         {
+            //ToDo: настроить вывод ошибок через класс Result
+
             CreateDatabase();
             CreateTables();
         }

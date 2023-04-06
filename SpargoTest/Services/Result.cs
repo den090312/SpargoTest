@@ -5,9 +5,24 @@
     /// </summary>
     public enum CrudOperation
     {
+        /// <summary>
+        /// Создание
+        /// </summary>
         Create,
+        
+        /// <summary>
+        /// Чтение
+        /// </summary>
         Read,
+        
+        /// <summary>
+        /// Обновление
+        /// </summary>
         Update,
+        
+        /// <summary>
+        /// Удаление
+        /// </summary>
         Delete
     }
 

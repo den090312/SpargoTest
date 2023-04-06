@@ -51,10 +51,10 @@ namespace SpargoTest.Menu
         /// Запуск пункта меню
         /// </summary>
         /// <param name="subMenu">Пункт подменю</param>
-        /// <param name="objects">Перечень объектов для подменю</param>
+        /// <param name="items">Перечень пунктов подменю</param>
         /// <param name="io">Интерфейс ввода-вывода</param>
         /// <param name="choice">Выбор опции для действия</param>
-        public void Go<T>(ISubMenu subMenu, IEnumerable<T> objects, out int choice, out bool proceed)
+        public void Go<T>(ISubMenu subMenu, IEnumerable<T> items, out int choice, out bool proceed)
         {
             Console.Clear();
 
@@ -65,7 +65,7 @@ namespace SpargoTest.Menu
 
             while (!exit)
             {
-                WriteSubMenu(subMenu, objects, out int menuItemsCount);
+                WriteSubMenu(subMenu, items, out int menuItemsCount);
 
                 if (!int.TryParse(Console.ReadLine(), out choice))
                     WriteError(menuItemsCount);
@@ -144,10 +144,10 @@ namespace SpargoTest.Menu
         /// <summary>
         /// Вывод сообщения об успешном выполнении операции
         /// </summary>
-        /// <param name="crudResult">Результат операции</param>
-        private static void SuccessMessage(Result crudResult)
+        /// <param name="result">Результат операции</param>
+        private static void SuccessMessage(Result result)
         {
-            if (crudResult.Success)
+            if (result.Success)
                 Console.WriteLine("Операция выполнена успешно");
         }
 
@@ -170,9 +170,9 @@ namespace SpargoTest.Menu
                 {
                     exit = true;
 
-                    crud.Remove<T>(Id, out Result crudResult);
+                    crud.Remove<T>(Id, out Result result);
 
-                    SuccessMessage(crudResult);
+                    SuccessMessage(result);
                 }
             }
         }

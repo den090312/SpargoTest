@@ -31,37 +31,37 @@ namespace SpargoTest.Repository
         /// </summary>
         /// <typeparam name="T">Тип создаваемого объекта</typeparam>
         /// <param name="obj">Создаваемый объект</param>
-        /// <param name="crudResult">Возможные ошибки при создании объекта</param>
-        public void Create<T>(T obj, out Result crudResult)
-            => _databaseProvider.Add(obj, out crudResult);
+        /// <param name="result">Возможные ошибки при создании объекта</param>
+        public void Create<T>(T obj, out Result result)
+            => _databaseProvider.Add(obj, out result);
 
         /// <summary>
         /// Удаление объекта из хранилища
         /// </summary>
         /// <typeparam name="T">Тип удаляемого объекта</typeparam>
         /// <param name="Id">Идентификатор удаляемого объекта</param>
-        /// <param name="crudResult">Возможные ошибки при удалении объектов</param>
-        public void Remove<T>(int Id, out Result crudResult)
-            => _databaseProvider.Remove<T>(Id, out crudResult);
+        /// <param name="result">Возможные ошибки при удалении объектов</param>
+        public void Remove<T>(int Id, out Result result)
+            => _databaseProvider.Remove<T>(Id, out result);
 
         /// <summary>
         /// Чтение объекта из хранилища
         /// </summary>
         /// <typeparam name="T">Тип читаемого объекта</typeparam>
         /// <param name="Id">Идентификатор читаемого объекта</param>
-        /// <param name="crudResult">Возможные ошибки при чтении объекта</param>
+        /// <param name="result">Возможные ошибки при чтении объекта</param>
         /// <returns>Читаемый объект</returns>
-        public T? Get<T>(int Id, out Result crudResult)
-            => _databaseProvider.Get<T>(Id, out crudResult);
+        public T? Get<T>(int Id, out Result result)
+            => _databaseProvider.Get<T>(Id, out result);
 
         /// <summary>
         /// Чтение объектов из хранилища
         /// </summary>
         /// <typeparam name="T">Тип читаемыех объектов</typeparam>
         /// <param name="obj">Читаемый объект</param>
-        /// <param name="crudResult">Возможные ошибки при чтении объектов</param>
+        /// <param name="result">Возможные ошибки при чтении объектов</param>
         /// <returns>Перечень читаемых объектов</returns>
-        public IEnumerable<T> GetAll<T>(out Result crudResult)
-            => _databaseProvider.GetAll<T>(out crudResult);
+        public IEnumerable<T> GetAll<T>(out Result result)
+            => _databaseProvider.GetAll<T>(out result);
     }
 }
