@@ -3,10 +3,11 @@ using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Reflection;
 
-using SpargoTest.CustomConsole;
+using SpargoTest.Panel;
 using SpargoTest.Interfaces;
 using SpargoTest.Menu;
 using SpargoTest.Services;
+using SpargoTest.Models;
 
 namespace SpargoTest
 {
@@ -53,7 +54,9 @@ namespace SpargoTest
                     SuccessOutput();
                     break;
                 case 5:
-                    //ToDo: Вывод списка товаров и их количества в выбранной аптеке
+                    var pharmacyId = Tools.CheckId<Pharmacy>("Введите идентификатор аптеки:");
+                    var products = Tools.GetProductsByPharmacy(pharmacyId);
+                    Tools.Output(products);
                     break;
                 case 6:
                     Tools.InitializeDatabase();

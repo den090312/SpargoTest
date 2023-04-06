@@ -2,7 +2,7 @@
 using SpargoTest.Models;
 using SpargoTest.Services;
 
-namespace SpargoTest.CustomConsole
+namespace SpargoTest.Panel
 {
     /// <summary>
     /// Панель создания товара

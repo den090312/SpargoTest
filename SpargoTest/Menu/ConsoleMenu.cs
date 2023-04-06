@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.Design;
 
-using SpargoTest.CustomConsole;
+using SpargoTest.Panel;
 using SpargoTest.Interfaces;
 using SpargoTest.Models;
 using SpargoTest.Services;

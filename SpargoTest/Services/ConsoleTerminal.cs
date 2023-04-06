@@ -19,6 +19,6 @@ namespace SpargoTest.Services
         /// Вывод сообщения в консоль
         /// </summary>
         /// <param name="message">Текст сообщения</param>
-        public void Output(string message) => Console.WriteLine(message);
+        public void Output(string? message) => Console.WriteLine(message);
     }
 }

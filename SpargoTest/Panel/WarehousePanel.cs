@@ -8,7 +8,7 @@ using SpargoTest.Interfaces;
 using SpargoTest.Models;
 using SpargoTest.Services;
 
-namespace SpargoTest.CustomConsole
+namespace SpargoTest.Panel
 {
     /// <summary>
     /// Панель создания склада

@@ -1,10 +1,11 @@
 ﻿using System.ComponentModel;
 using System.Data.SqlClient;
 
-using SpargoTest.CustomConsole;
+using SpargoTest.Panel;
 using SpargoTest.Interfaces;
 using SpargoTest.Menu;
 using SpargoTest.Repository;
+using SpargoTest.DTO;
 
 namespace SpargoTest.Services
 {
@@ -42,6 +43,15 @@ namespace SpargoTest.Services
         /// Имя папка моделей
         /// </summary>
         public static string ModelsFolderName => "Models";
+
+        /// <summary>
+        /// Получить список продуктов по идентификатору аптеки
+        /// </summary>
+        /// <param name="pharmacyId">Идентификатор аптеки</param>
+        /// <param name="result">Результат получения</param>
+        /// <returns>Список продуктов</returns>
+        public static IEnumerable<ProductDto> GetProductsByPharmacy(int pharmacyId) 
+            => new SqlExpressProvider().GetProductsByPharmacy(pharmacyId);
 
         /// <summary>
         /// Получение корневого каталога для текущего запуска приложения

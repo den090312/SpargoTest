@@ -2,7 +2,9 @@
 using System.Reflection;
 using System.Text;
 
+using SpargoTest.DTO;
 using SpargoTest.Interfaces;
+using SpargoTest.Models;
 using SpargoTest.Services;
 
 namespace SpargoTest.Repository
@@ -123,7 +125,7 @@ namespace SpargoTest.Repository
             using (var connection = new SqlConnection(DatabaseConnectionString))
             {
                 var parameters = new[] { new SqlParameter("@Id", Id) };
-                var reader = GetReader<T>(connection, parameters, $"SELECT * FROM {typeof(T).Name} WHERE Id = @id", out result);
+                var reader = GetReader(connection, parameters, $"SELECT * FROM {typeof(T).Name} WHERE Id = @id", out result);
 
                 if (reader == null)
                     return default;
@@ -155,6 +157,58 @@ namespace SpargoTest.Repository
         }
 
         /// <summary>
+        /// Получить список продуктов по идентификатору аптеки
+        /// </summary>
+        /// <param name="pharmacyId">Идентификатор аптеки</param>
+        /// <returns>Список продуктов</returns>
+        public IEnumerable<ProductDto> GetProductsByPharmacy(int pharmacyId)
+        {
+            var data = new List<Dictionary<string, object>>();
+
+            using (var connection = new SqlConnection(DatabaseConnectionString))
+            {
+                var query = "SELECT Product.Id AS Id, Product.Name AS Name, COUNT(Consignment.Id) AS ProductCount FROM Product " +
+                    "JOIN Consignment ON Product.Id = Consignment.ProductId " +
+                    "JOIN Warehouse ON Consignment.WarehouseId = Warehouse.Id " +
+                    "WHERE Warehouse.PharmacyId = @PharmacyId " +
+                    "GROUP BY Product.Name";
+
+                var parameters = new[] { new SqlParameter("@PharmacyId", pharmacyId) };
+                var reader = GetReader(connection, parameters, query, out Result result);
+
+                if (reader == null)
+                    return Enumerable.Empty<ProductDto>();
+
+                while (reader.Read())
+                {
+                    var rowData = new Dictionary<string, object>();
+
+                    for (int i = 0; i < reader.FieldCount; i++)
+                        rowData.Add(reader.GetName(i), reader.GetValue(i));
+
+                    data.Add(rowData);
+                }
+            }
+
+            var objects = new List<ProductDto>();
+
+            foreach (var itemData in data)
+            {
+                var item = Activator.CreateInstance<ProductDto>();
+
+                foreach (var property in typeof(ProductDto).GetProperties())
+                {
+                    if (itemData.ContainsKey(property.Name) && itemData[property.Name] != DBNull.Value)
+                        property.SetValue(item, itemData[property.Name]);
+                }
+
+                objects.Add(item);
+            }
+
+            return objects;
+        }
+
+        /// <summary>
         /// Получить перечень всех объектов из базы данных SQL Server Express
         /// </summary>
         /// <typeparam name="T">Тип получаемых объектов</typeparam>
@@ -166,7 +220,7 @@ namespace SpargoTest.Repository
 
             using (var connection = new SqlConnection(DatabaseConnectionString))
             {
-                var reader = GetReader<T>(connection, $"SELECT * FROM {typeof(T).Name}", out result);
+                var reader = GetReader(connection, $"SELECT * FROM {typeof(T).Name}", out result);
 
                 if (reader == null)
                     return Enumerable.Empty<T>();
@@ -281,13 +335,12 @@ namespace SpargoTest.Repository
         /// <summary>
         /// Получение считывателя данных БД
         /// </summary>
-        /// <typeparam name="T">Тип считываемого объекта</typeparam>
         /// <param name="connection">Соединение</param>
         /// <param name="parameters">Параметры</param>
         /// <param name="query">Код выполнения запроса на считывание</param>
         /// <param name="result">Результат<</param>
         /// <returns>Считыватель</returns>
-        private SqlDataReader? GetReader<T>(SqlConnection connection, SqlParameter[] parameters, string query, out Result result)
+        private SqlDataReader? GetReader(SqlConnection connection, SqlParameter[] parameters, string query, out Result result)
         {
             connection.Open();
 
@@ -315,7 +368,7 @@ namespace SpargoTest.Repository
         /// <param name="query">Код выполнения запроса на считывание</param>
         /// <param name="result">Результат<</param>
         /// <returns>Считыватель</returns>
-        private SqlDataReader? GetReader<T>(SqlConnection connection, string query, out Result result)
+        private SqlDataReader? GetReader(SqlConnection connection, string query, out Result result)
         {
             connection.Open();
 

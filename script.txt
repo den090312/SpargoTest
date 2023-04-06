@@ -1,0 +1,26 @@
+CREATE TABLE Consignment (
+    Id int NOT NULL PRIMARY KEY,
+    ProductId int,
+    WarehouseId int,
+    FOREIGN KEY (ProductId) REFERENCES Product(Id),
+    FOREIGN KEY (WarehouseId) REFERENCES Warehouse(Id)
+);
+
+CREATE TABLE Pharmacy (
+    Id int NOT NULL PRIMARY KEY,
+    Name nvarchar(max),
+    Address nvarchar(max),
+    PhoneNumber nvarchar(max)
+);
+
+CREATE TABLE Product (
+    Id int NOT NULL PRIMARY KEY,
+    Name nvarchar(max)
+);
+
+CREATE TABLE Warehouse (
+    Id int NOT NULL PRIMARY KEY,
+    PharmacyId int,
+    Name nvarchar(max),
+    FOREIGN KEY (PharmacyId) REFERENCES Pharmacy(Id)
+);
