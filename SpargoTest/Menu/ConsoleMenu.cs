@@ -168,7 +168,7 @@ namespace SpargoTest.Menu
         }
 
         /// <summary>
-        /// Вывод ошибки меню на консоль
+        /// Вывод ошибки меню
         /// </summary>
         /// <param name="count">Количество пунктов меню</param>
         private static void WriteError(int count)

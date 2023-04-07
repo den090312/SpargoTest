@@ -12,7 +12,7 @@ namespace SpargoTest.Interfaces
         /// </summary>
         /// <typeparam name="T">Тип получаемого объекта</typeparam>
         /// <typeparam name="Id">Идентификатор получаемого объекта</typeparam>
-        /// <param name="result">Возможные ошибки при получении объекта</param>
+        /// <param name="result">Результат при получении объекта</param>
         /// <returns>Получаемый объект</returns>
         T? Get<T>(int Id, out Result result);
 
@@ -20,7 +20,7 @@ namespace SpargoTest.Interfaces
         /// Получение перечня объектов
         /// </summary>
         /// <typeparam name="T">Тип получаемых объектов</typeparam>
-        /// <param name="result">Возможные ошибки при получении объектов</param>
+        /// <param name="result">Результат при получении объектов</param>
         /// <returns>Перечень объектов</returns>
         IEnumerable<T> GetAll<T>(out Result result);
 
@@ -29,7 +29,7 @@ namespace SpargoTest.Interfaces
         /// </summary>
         /// <typeparam name="T">Тип объекта</typeparam>
         /// <param name="obj">Объект</param>
-        /// <param name="result">Возможные ошибки при создании объекта</param>
+        /// <param name="result">Результат при создании объекта</param>
         void Create<T>(T obj, out Result result);
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace SpargoTest.Interfaces
         /// </summary>
         /// <typeparam name="T">Тип объекта</typeparam>
         /// <param name="Id">Идентификатор объекта</param>
-        /// <param name="result">Возможные ошибки при удалении объекта</param>
+        /// <param name="result">Результат при удалении объекта</param>
         void Remove<T>(int Id, out Result result);
     }
 }

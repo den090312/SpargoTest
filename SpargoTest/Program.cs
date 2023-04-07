@@ -50,10 +50,7 @@ namespace SpargoTest
                     Choice(choice, ConsoleMenu.Consignments, "партию", new ConsignmentPanel());
                     break;
                 case 5:
-                    var pharmacyId = Tools.CheckId<Pharmacy>("Введите идентификатор аптеки:");
-                    var products = Tools.GetProductsByPharmacy(pharmacyId);
-                    Tools.Output(products);
-                    Tools.WriteSuccessMessage();
+                    GetProductByPharmacy();
                     break;
                 case 6:
                     Tools.InitializeDatabase();
@@ -62,6 +59,17 @@ namespace SpargoTest
                     exit = true;
                     break;
             }
+        }
+
+        /// <summary>
+        /// Получение продукта по аптеке
+        /// </summary>
+        private static void GetProductByPharmacy()
+        {
+            var pharmacyId = Tools.CheckId<Pharmacy>("Введите идентификатор аптеки:");
+            var products = Tools.GetProductsByPharmacy(pharmacyId);
+            Tools.Output(products);
+            Tools.WriteSuccessMessage();
         }
 
         /// <summary>
