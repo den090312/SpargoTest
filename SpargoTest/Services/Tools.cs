@@ -27,7 +27,11 @@ namespace SpargoTest.Services
         /// <summary>
         /// Инициализация базы данных
         /// </summary>
-        public static void InitializeDatabase() => _databaseProvider.Initialize();
+        public static void InitializeDatabase()
+        {
+            _databaseProvider.Initialize();
+            WriteSuccessMessage();
+        }
 
         /// <summary>
         /// Хранилище

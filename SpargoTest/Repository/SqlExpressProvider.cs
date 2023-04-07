@@ -103,7 +103,7 @@ namespace SpargoTest.Repository
             foreach (var property in properties)
                 parameters.Add(new SqlParameter("@" + property.Name, property.GetValue(obj)));
 
-            var rowsAffected = ExecuteNonQuery(commandText, parameters.ToArray(), out result);
+            var rowsAffected = ExecuteNonQuery(commandText, parameters.ToArray(), DatabaseConnectionString, out result);
 
             if (rowsAffected > 0)
                 result = new Result(CrudOperation.Create);
@@ -121,7 +121,7 @@ namespace SpargoTest.Repository
         public T? Get<T>(int Id, out Result result)
         {
             var parameters = new[] { new SqlParameter("@Id", Id) };
-            var data = GetData($"SELECT * FROM {typeof(T).Name} WHERE Id = @Id", parameters).FirstOrDefault();
+            var data = GetData($"SELECT * FROM {typeof(T).Name} WHERE Id = @Id", DatabaseConnectionString, parameters).FirstOrDefault();
 
             if (data == null)
             {
@@ -150,7 +150,7 @@ namespace SpargoTest.Repository
                 "WHERE Warehouse.PharmacyId = @PharmacyId " +
                 "GROUP BY Product.Id, Product.Name";
             var parameters = new[] { new SqlParameter("@PharmacyId", pharmacyId) };
-            var data = GetData(query, parameters);
+            var data = GetData(query, DatabaseConnectionString, parameters);
             var objects = new List<ProductDto>();
             SetData(data, ref objects);
 
@@ -165,7 +165,7 @@ namespace SpargoTest.Repository
         /// <returns>Перечень объектов</returns>
         public IEnumerable<T> GetAll<T>(out Result result)
         {
-            var data = GetData($"SELECT * FROM {typeof(T).Name}");
+            var data = GetData($"SELECT * FROM {typeof(T).Name}", DatabaseConnectionString);
             var objects = new List<T>();
             SetData(data, ref objects);
             result = new Result(CrudOperation.Read);
@@ -191,7 +191,7 @@ namespace SpargoTest.Repository
             var commandText = $"DELETE FROM {typeof(T).Name} WHERE Id = @Id";
             var parameters = new[] { new SqlParameter("@Id", Id) };
 
-            var rowsAffected = ExecuteNonQuery(commandText, parameters, out result);
+            var rowsAffected = ExecuteNonQuery(commandText, parameters, DatabaseConnectionString, out result);
 
             if (rowsAffected > 0)
                 result = new Result(CrudOperation.Delete);
@@ -236,13 +236,14 @@ namespace SpargoTest.Repository
         /// Получение данных
         /// </summary>
         /// <param name="query">Строка запроса</param>
+        /// <param name="connectionString">Строка подключения</param>
         /// <param name="parameters">Параметры запроса</param>
         /// <returns>Перечень данных</returns>
-        private IEnumerable<Dictionary<string, object>> GetData(string query, SqlParameter[]? parameters = null)
+        private IEnumerable<Dictionary<string, object>> GetData(string query, string connectionString, SqlParameter[]? parameters = null)
         {
             var data = new List<Dictionary<string, object>>();
 
-            using (var connection = new SqlConnection(DatabaseConnectionString))
+            using (var connection = new SqlConnection(connectionString))
             {
                 var reader = GetReader(connection, parameters, query, out Result result);
 
@@ -270,10 +271,12 @@ namespace SpargoTest.Repository
         {
             Result result;
 
-            var count = GetScalar($"SELECT COUNT(*) FROM sys.databases WHERE name = '{_databaseName}'", out result);
+            var count = GetScalar($"SELECT COUNT(*) FROM sys.databases WHERE name = '{_databaseName}'"
+                , _serverConnectionString
+                , out result);
             
             if (count != null && (int)count > 0)
-                ExecuteNonQuery($"DROP DATABASE {_databaseName}", out result);
+                ExecuteNonQuery($"DROP DATABASE {_databaseName}", _serverConnectionString, out result);
 
             if (File.Exists(DatabaseFileName))
                 File.Delete(DatabaseFileName);
@@ -281,18 +284,21 @@ namespace SpargoTest.Repository
             if (File.Exists(LogFileName))
                 File.Delete(LogFileName);
             
-            ExecuteNonQuery($"CREATE DATABASE {_databaseName} ON PRIMARY (NAME={_databaseName}, FILENAME='{DatabaseFileName}')", out result);
+            ExecuteNonQuery($"CREATE DATABASE {_databaseName} ON PRIMARY (NAME={_databaseName}, FILENAME='{DatabaseFileName}')"
+                , _serverConnectionString
+                , out result);
         }
 
         /// <summary>
         /// Получение склярного значения
         /// </summary>
         /// <param name="query">Код запроса</param>
+        /// <param name="connectionString">Строка подключения</param>
         /// <param name="result">Результат операции</param>
         /// <returns>Скларяное значение</returns>
-        private object? GetScalar(string query, out Result result)
+        private object? GetScalar(string query, string connectionString, out Result result)
         {
-            using (var connection = new SqlConnection(DatabaseConnectionString))
+            using (var connection = new SqlConnection(connectionString))
             {
                 connection.Open();
 
@@ -349,11 +355,12 @@ namespace SpargoTest.Repository
         /// </summary>
         /// <param name="query">Код выполнения</param>
         /// <param name="parameters">Параметры</param>
+        /// <param name="connectionString">Строка подключения</param>
         /// <param name="result">Результат выполнения</param>
         /// <returns>Количество затронутых строк в БД</returns>
-        private int ExecuteNonQuery(string query, SqlParameter[] parameters, out Result result)
+        private int ExecuteNonQuery(string query, SqlParameter[] parameters, string connectionString, out Result result)
         {
-            using (var connection = new SqlConnection(DatabaseConnectionString))
+            using (var connection = new SqlConnection(connectionString))
             {
                 connection.Open();
                 
@@ -379,11 +386,12 @@ namespace SpargoTest.Repository
         /// Выполнение кода SQL
         /// </summary>
         /// <param name="query">Код выполнения</param>
+        /// <param name="connectionString">Строка подключения</param>
         /// <param name="result">Результат выполнения</param>
         /// <returns>Количество затронутых строк в БД</returns>
-        private int ExecuteNonQuery(string query, out Result result)
+        private int ExecuteNonQuery(string query, string connectionString, out Result result)
         {
-            using (var connection = new SqlConnection(DatabaseConnectionString))
+            using (var connection = new SqlConnection(connectionString))
             {
                 connection.Open();
                 using var command = new SqlCommand(query, connection);
@@ -441,9 +449,9 @@ namespace SpargoTest.Repository
             if (createTablesQuery.Length == 0)
                 return;
 
-            ExecuteNonQuery(createTablesQuery.ToString(), out Result result);
+            ExecuteNonQuery(createTablesQuery.ToString(), DatabaseConnectionString, out Result result);
             if (foreignKeysQuery.Length > 0)
-                ExecuteNonQuery(foreignKeysQuery.ToString(), out result);
+                ExecuteNonQuery(foreignKeysQuery.ToString(), DatabaseConnectionString, out result);
         }
 
         /// <summary>
@@ -481,7 +489,9 @@ namespace SpargoTest.Repository
         /// <returns></returns>
         private bool TableExists(string tableName)
         {
-            var scalarResult = GetScalar($"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{tableName}'", out Result result);
+            var scalarResult = GetScalar($"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{tableName}'"
+                , DatabaseConnectionString
+                , out Result result);
 
             if (!result.Success)
                 return false;
