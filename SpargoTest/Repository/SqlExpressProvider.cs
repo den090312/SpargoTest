@@ -277,12 +277,6 @@ namespace SpargoTest.Repository
             
             if (count != null && (int)count > 0)
                 ExecuteNonQuery($"DROP DATABASE {_databaseName}", _serverConnectionString, out result);
-
-            if (File.Exists(DatabaseFileName))
-                File.Delete(DatabaseFileName);
-
-            if (File.Exists(LogFileName))
-                File.Delete(LogFileName);
             
             ExecuteNonQuery($"CREATE DATABASE {_databaseName} ON PRIMARY (NAME={_databaseName}, FILENAME='{DatabaseFileName}')"
                 , _serverConnectionString
