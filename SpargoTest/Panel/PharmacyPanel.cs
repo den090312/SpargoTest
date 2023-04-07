@@ -29,7 +29,7 @@ namespace SpargoTest.Panel
 
             while (phoneNumber == default)
             {
-                Tools.Terminal.Output("Введите число без пробелов:");
+                Tools.Terminal.Output("Введите число без пробелов между цифрами:");
                 phoneNumber = Tools.Terminal.Input<int>();
             }
 
