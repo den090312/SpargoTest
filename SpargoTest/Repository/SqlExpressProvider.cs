@@ -103,7 +103,7 @@ namespace SpargoTest.Repository
             foreach (var property in properties)
                 parameters.Add(new SqlParameter("@" + property.Name, property.GetValue(obj)));
 
-            var rowsAffected = ExecuteNonQuery(commandText, parameters.ToArray(), DatabaseConnectionString, out result);
+            var rowsAffected = ExecuteNonQuery(commandText, DatabaseConnectionString, out result, parameters.ToArray());
 
             if (rowsAffected > 0)
                 result = new Result(CrudOperation.Create);
@@ -191,7 +191,7 @@ namespace SpargoTest.Repository
             var commandText = $"DELETE FROM {typeof(T).Name} WHERE Id = @Id";
             var parameters = new[] { new SqlParameter("@Id", Id) };
 
-            var rowsAffected = ExecuteNonQuery(commandText, parameters, DatabaseConnectionString, out result);
+            var rowsAffected = ExecuteNonQuery(commandText, DatabaseConnectionString, out result, parameters);
 
             if (rowsAffected > 0)
                 result = new Result(CrudOperation.Delete);
@@ -352,14 +352,16 @@ namespace SpargoTest.Repository
         /// <param name="connectionString">Строка подключения</param>
         /// <param name="result">Результат выполнения</param>
         /// <returns>Количество затронутых строк в БД</returns>
-        private int ExecuteNonQuery(string query, SqlParameter[] parameters, string connectionString, out Result result)
+        private int ExecuteNonQuery(string query, string connectionString, out Result result, SqlParameter[]? parameters = null)
         {
             using (var connection = new SqlConnection(connectionString))
             {
                 connection.Open();
                 
                 using var command = new SqlCommand(query, connection);
-                command.Parameters.AddRange(parameters);
+
+                if (parameters != null)
+                    command.Parameters.AddRange(parameters);
 
                 try
                 {
@@ -371,35 +373,6 @@ namespace SpargoTest.Repository
                 {
                     result = new Result(CrudOperation.Read, ex.Message);
                     
-                    return 0;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Выполнение кода SQL
-        /// </summary>
-        /// <param name="query">Код выполнения</param>
-        /// <param name="connectionString">Строка подключения</param>
-        /// <param name="result">Результат выполнения</param>
-        /// <returns>Количество затронутых строк в БД</returns>
-        private int ExecuteNonQuery(string query, string connectionString, out Result result)
-        {
-            using (var connection = new SqlConnection(connectionString))
-            {
-                connection.Open();
-                using var command = new SqlCommand(query, connection);
-
-                try
-                {
-                    result = new Result(CrudOperation.Read);
-
-                    return command.ExecuteNonQuery();
-                }
-                catch (Exception ex)
-                {
-                    result = new Result(CrudOperation.Read, ex.Message);
-
                     return 0;
                 }
             }
