@@ -127,6 +127,30 @@ namespace SpargoTest.Services
         }
 
         /// <summary>
+        /// Конвертер строки
+        /// </summary>
+        /// <typeparam name="T">Тип результата конвертации</typeparam>
+        /// <param name="input">Конвертируемая строка</param>
+        /// <param name="value">Сконвертированное значение</param>
+        /// <returns>Результат конвертера</returns>
+        public static bool StringTryParse<T>(string? input, out T? value)
+        {
+            value = default;
+
+            if (input == null)
+                return false;
+
+            var converter = TypeDescriptor.GetConverter(typeof(T));
+
+            if (converter == null || !converter.IsValid(input))
+                return false;
+
+            value = (T?)converter.ConvertFromString(input);
+
+            return true;
+        }
+
+        /// <summary>
         /// Получение значения
         /// </summary>
         /// <typeparam name="T">Тип значения</typeparam>
@@ -147,30 +171,6 @@ namespace SpargoTest.Services
             }
 
             return value;
-        }
-
-        /// <summary>
-        /// Конвертер строки
-        /// </summary>
-        /// <typeparam name="T">Тип результата конвертации</typeparam>
-        /// <param name="input">Конвертируемая строка</param>
-        /// <param name="value">Сконвертированное значение</param>
-        /// <returns>Результат конвертера</returns>
-        private static bool StringTryParse<T>(string? input, out T? value)
-        {
-            value = default;
-
-            if (input == null)
-                return false;
-
-            var converter = TypeDescriptor.GetConverter(typeof(T));
-
-            if (converter == null || !converter.IsValid(input))
-                return false;
-
-            value = (T?)converter.ConvertFromString(input);
-
-            return true;
         }
     }
 }

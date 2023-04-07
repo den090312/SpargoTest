@@ -6,6 +6,13 @@
     public interface ITerminal
     {
         /// <summary>
+        /// Ввод данных определенного формата
+        /// </summary>
+        /// <typeparam name="T">Формат данных</typeparam>
+        /// <returns>Значение определенного формата</returns>
+        T? Input<T>();
+
+        /// <summary>
         /// Ввод данных
         /// </summary>
         /// <returns>Введенное значение</returns>

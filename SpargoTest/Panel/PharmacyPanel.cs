@@ -24,7 +24,16 @@ namespace SpargoTest.Panel
             pharmacy.Address = Tools.Terminal.Input();
 
             Tools.Terminal.Output("Введите телефон:");
-            pharmacy.PhoneNumber = Tools.Terminal.Input();
+
+            var phoneNumber = Tools.Terminal.Input<int>();
+
+            while (phoneNumber == default)
+            {
+                Tools.Terminal.Output("Введите число без пробелов:");
+                phoneNumber = Tools.Terminal.Input<int>();
+            }
+
+            pharmacy.PhoneNumber = phoneNumber.ToString();
 
             return pharmacy;
         }
