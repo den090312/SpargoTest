@@ -150,21 +150,16 @@ namespace SpargoTest.Menu
         /// <param name="crud">Набор операций с объектами</param>
         private static void Delete<T>(ICrud crud)
         {
+            int id;
+
             Tools.Terminal.Output("Введите идентификатор для удаления:");
 
-            var exit = false;
-
-            while (!exit)
+            while (!int.TryParse(Tools.Terminal.Input(), out id))
             {
-                if (!int.TryParse(Tools.Terminal.Input(), out int Id))
-                    Tools.Terminal.Output("Введите корректное число!");
-                else
-                {
-                    exit = true;
-
-                    crud.Remove<T>(Id, out Result result);
-                }
+                Tools.Terminal.Output("Введите корректное число!");
             }
+
+            crud.Remove<T>(id, out Result result);
         }
 
         /// <summary>

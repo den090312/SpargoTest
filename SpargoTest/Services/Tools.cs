@@ -105,22 +105,14 @@ namespace SpargoTest.Services
         /// <returns>Значение идентификатора</returns>
         public static int CheckId<T>(string message) where T : class
         {
-            int id;
+            var id = Tools.Input<int>(message);
+            Storage.Get<T>(id, out Result result);
 
-            while (true)
+            while (!result.Success)
             {
+                Tools.Terminal.Output($"Объект с идентификатором {id} не найден.");
                 id = Tools.Input<int>(message);
-
-                Storage.Get<T>(id, out Result result);
-
-                if (!result.Success)
-                {
-                    Tools.Terminal.Output($"Объект с идентификатором {id} не найден.");
-
-                    continue;
-                }
-
-                break;
+                Storage.Get<T>(id, out result);
             }
 
             return id;
@@ -160,13 +152,10 @@ namespace SpargoTest.Services
         {
             T? value;
 
-            while (true)
+            Tools.Terminal.Output(message);
+
+            while (!Tools.StringTryParse(Tools.Terminal.Input(), out value))
             {
-                Tools.Terminal.Output(message);
-
-                if (Tools.StringTryParse(Tools.Terminal.Input(), out value))
-                    break;
-
                 Tools.Terminal.Output("Введите корректное значение");
             }
 
