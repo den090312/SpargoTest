@@ -129,14 +129,10 @@ namespace SpargoTest.Repository
         public T? Get<T>(int Id, out Result result)
         {
             var parameters = new[] { new SqlParameter("@Id", Id) };
-            var data = GetData($"SELECT * FROM {typeof(T).Name} WHERE Id = @Id", DatabaseConnectionString, parameters).FirstOrDefault();
+            var data = GetData($"SELECT * FROM {typeof(T).Name} WHERE Id = @Id", DatabaseConnectionString, out result, parameters).FirstOrDefault();
 
-            if (data == null)
-            {
-                result = new Result(CrudOperation.Read, "Объект не найден в БД");
-
+            if (!result.Success)
                 return default;
-            }
 
             var item = Activator.CreateInstance<T>();
             SetProperties(data, ref item);
@@ -157,9 +153,14 @@ namespace SpargoTest.Repository
                 "JOIN Warehouse ON Consignment.WarehouseId = Warehouse.Id " +
                 "WHERE Warehouse.PharmacyId = @PharmacyId " +
                 "GROUP BY Product.Id, Product.Name";
+            
             var parameters = new[] { new SqlParameter("@PharmacyId", pharmacyId) };
-            var data = GetData(query, DatabaseConnectionString, parameters);
+            var data = GetData(query, DatabaseConnectionString, out Result result, parameters);
             var objects = new List<ProductDto>();
+
+            if (!result.Success)
+                return objects;
+
             SetData(data, ref objects);
 
             return objects;
@@ -173,10 +174,13 @@ namespace SpargoTest.Repository
         /// <returns>Перечень объектов</returns>
         public IEnumerable<T> GetAll<T>(out Result result)
         {
-            var data = GetData($"SELECT * FROM {typeof(T).Name}", DatabaseConnectionString);
+            var data = GetData($"SELECT * FROM {typeof(T).Name}", DatabaseConnectionString, out result);
             var objects = new List<T>();
+
+            if (!result.Success)
+                return objects;
+
             SetData(data, ref objects);
-            result = new Result(CrudOperation.Read);
 
             return objects;
         }
@@ -198,7 +202,6 @@ namespace SpargoTest.Repository
 
             var commandText = $"DELETE FROM {typeof(T).Name} WHERE Id = @Id";
             var parameters = new[] { new SqlParameter("@Id", Id) };
-
             var rowsAffected = ExecuteNonQuery(commandText, DatabaseConnectionString, out result, parameters);
 
             if (rowsAffected > 0)
@@ -245,17 +248,18 @@ namespace SpargoTest.Repository
         /// </summary>
         /// <param name="query">Строка запроса</param>
         /// <param name="connectionString">Строка подключения</param>
+        /// <param name="result">Результат получения</param>
         /// <param name="parameters">Параметры запроса</param>
         /// <returns>Перечень данных</returns>
-        private IEnumerable<Dictionary<string, object>> GetData(string query, string connectionString, SqlParameter[]? parameters = null)
+        private IEnumerable<Dictionary<string, object>> GetData(string query, string connectionString, out Result result, SqlParameter[]? parameters = null)
         {
             var data = new List<Dictionary<string, object>>();
 
             using (var connection = new SqlConnection(connectionString))
             {
-                var reader = GetReader(connection, parameters, query, out Result result);
+                var reader = GetReader(connection, parameters, query, out result);
 
-                if (reader == null)
+                if (!result.Success || reader == null)
                     return Enumerable.Empty<Dictionary<string, object>>();
 
                 while (reader.Read())
@@ -278,7 +282,6 @@ namespace SpargoTest.Repository
         private void CreateDatabase(out Result result)
         {
             result = new Result(CrudOperation.Create);
-
             var count = GetScalar($"SELECT COUNT(*) FROM sys.databases WHERE name = '{_databaseName}'", _serverConnectionString);
 
             if (count is int value && value > 0)
@@ -334,7 +337,7 @@ namespace SpargoTest.Repository
             }
             catch (Exception ex)
             {
-                result = new Result(CrudOperation.Read, ex.Message);
+                result = new Result(CrudOperation.Read, ex.Message != string.Empty ? ex.Message : "Ошибка получения считывателя БД");
 
                 return null;
             }
@@ -367,7 +370,7 @@ namespace SpargoTest.Repository
                 }
                 catch (Exception ex)
                 {
-                    result = new Result(CrudOperation.Update, ex.Message);
+                    result = new Result(CrudOperation.Update, ex.Message != string.Empty ? ex.Message : "Ошибка выполнения кода SQL");
                     
                     return 0;
                 }
