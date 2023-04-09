@@ -97,17 +97,18 @@ namespace SpargoTest.Menu
         /// <param name="panel">Панель данных</param>
         public void Action<T>(int choice, ICrud crud, IPanel<T> panel)
         {
+            Result result;
+
             if (choice == 2)
             {
-                Delete<T>(crud);
-                Tools.WriteSuccessMessage();
+                Delete<T>(crud, out result);
+                Tools.WriteResultMessage(result);
             }
 
             if (choice != 1)
                 return;
 
-            crud.Create<T>(panel.Get(), out Result result);
-
+            crud.Create<T>(panel.Get(), out result);
             Tools.WriteResultMessage(result);
         }
 
@@ -149,7 +150,7 @@ namespace SpargoTest.Menu
         /// </summary>
         /// <typeparam name="T">Тип удаляемого объекта</typeparam>
         /// <param name="crud">Набор операций с объектами</param>
-        private static void Delete<T>(ICrud crud)
+        private static void Delete<T>(ICrud crud, out Result result)
         {
             int id;
 
@@ -160,9 +161,7 @@ namespace SpargoTest.Menu
                 Tools.Terminal.Output("Введите корректное число!");
             }
 
-            crud.Remove<T>(id, out Result result);
-
-            Tools.WriteResultMessage(result);
+            crud.Remove<T>(id, out result);
         }
 
         /// <summary>
