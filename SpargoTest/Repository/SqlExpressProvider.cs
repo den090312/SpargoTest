@@ -279,14 +279,9 @@ namespace SpargoTest.Repository
         {
             result = new Result(CrudOperation.Create);
 
-            var count = GetScalar($"SELECT COUNT(*) FROM sys.databases WHERE name = '{_databaseName}'"
-                , _serverConnectionString
-                , out result);
+            var count = GetScalar($"SELECT COUNT(*) FROM sys.databases WHERE name = '{_databaseName}'", _serverConnectionString);
 
-            if (!result.Success)
-                return;
-
-            if (count != null && (int)count > 0)
+            if (count is int value && value > 0)
                 ExecuteNonQuery($"DROP DATABASE {_databaseName}", _serverConnectionString, out result);
 
             if (!result.Success)
@@ -302,28 +297,15 @@ namespace SpargoTest.Repository
         /// </summary>
         /// <param name="query">Код запроса</param>
         /// <param name="connectionString">Строка подключения</param>
-        /// <param name="result">Результат операции</param>
         /// <returns>Скларяное значение</returns>
-        private object? GetScalar(string query, string connectionString, out Result result)
+        private object? GetScalar(string query, string connectionString)
         {
             using (var connection = new SqlConnection(connectionString))
             {
                 connection.Open();
-
                 using var command = new SqlCommand(query, connection);
 
-                try
-                {
-                    result = new Result(CrudOperation.Read);
-
-                    return command.ExecuteScalar();
-                }
-                catch (Exception ex)
-                {
-                    result = new Result(CrudOperation.Read, ex.Message);
-
-                    return null;
-                }
+                return command.ExecuteScalar();
             }
         }
 
@@ -477,12 +459,7 @@ namespace SpargoTest.Repository
         /// <returns></returns>
         private bool TableExists(string tableName)
         {
-            var scalarResult = GetScalar($"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{tableName}'"
-                , DatabaseConnectionString
-                , out Result result);
-
-            if (!result.Success)
-                return false;
+            var scalarResult = GetScalar($"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '{tableName}'", DatabaseConnectionString);
 
             if (scalarResult is int count)
                 return count > 0;
