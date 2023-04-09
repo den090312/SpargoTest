@@ -116,7 +116,7 @@ namespace SpargoTest.Repository
             if (rowsAffected > 0)
                 result = new Result(CrudOperation.Create);
             else
-                result = new Result(CrudOperation.Create, "Ошибка при добавлении объекта в базу данных");
+                result = new Result(CrudOperation.Create, result.ErrorMessage ?? "Ошибка при добавлении объекта в базу данных");
         }
 
         /// <summary>
@@ -204,7 +204,7 @@ namespace SpargoTest.Repository
             if (rowsAffected > 0)
                 result = new Result(CrudOperation.Delete);
             else
-                result = new Result(CrudOperation.Delete, "Ошибка при удалении объекта из базы данных");
+                result = new Result(CrudOperation.Delete, result.ErrorMessage ?? "Ошибка при удалении объекта из базы данных");
         }
 
         /// <summary>
