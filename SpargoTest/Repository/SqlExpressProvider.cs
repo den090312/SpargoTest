@@ -1,4 +1,5 @@
 ﻿using System.Data.SqlClient;
+using System.Dynamic;
 using System.Reflection;
 using System.Text;
 
@@ -59,10 +60,17 @@ namespace SpargoTest.Repository
         /// </summary>
         public void Initialize()
         {
-            //ToDo: настроить вывод ошибок через класс Result
+            CreateDatabase(out Result result);
 
-            CreateDatabase();
-            CreateTables();
+            if (!Tools.HandleResult(result))
+                return;
+
+            CreateTables(out result);
+            
+            if (!Tools.HandleResult(result))
+                return;
+
+            Tools.WriteSuccessMessage();
         }
 
         /// <summary>
@@ -267,17 +275,23 @@ namespace SpargoTest.Repository
         /// <summary>
         /// Создание базы данных SQL Server Express
         /// </summary>
-        private void CreateDatabase()
+        private void CreateDatabase(out Result result)
         {
-            Result result;
+            result = new Result(CrudOperation.Create);
 
             var count = GetScalar($"SELECT COUNT(*) FROM sys.databases WHERE name = '{_databaseName}'"
                 , _serverConnectionString
                 , out result);
-            
+
+            if (!result.Success)
+                return;
+
             if (count != null && (int)count > 0)
                 ExecuteNonQuery($"DROP DATABASE {_databaseName}", _serverConnectionString, out result);
-            
+
+            if (!result.Success)
+                return;
+
             ExecuteNonQuery($"CREATE DATABASE {_databaseName} ON PRIMARY (NAME={_databaseName}, FILENAME='{DatabaseFileName}')"
                 , _serverConnectionString
                 , out result);
@@ -365,13 +379,13 @@ namespace SpargoTest.Repository
 
                 try
                 {
-                    result = new Result(CrudOperation.Read);
+                    result = new Result(CrudOperation.Update);
 
                     return command.ExecuteNonQuery();
                 }
                 catch (Exception ex)
                 {
-                    result = new Result(CrudOperation.Read, ex.Message);
+                    result = new Result(CrudOperation.Update, ex.Message);
                     
                     return 0;
                 }
@@ -380,9 +394,12 @@ namespace SpargoTest.Repository
 
         /// <summary>
         /// Создание таблиц БД, соотв. моделям из папки Program.ModelsFolderName
+        /// <param name="result">Результат выполнения</param>
         /// </summary>
-        private void CreateTables()
+        private void CreateTables(out Result result)
         {
+            result = new Result(CrudOperation.Create);
+
             var assembly = Assembly.GetExecutingAssembly();
             var modelsPath = Path.Combine(Tools.BaseDirectory(), Tools.ModelsFolderName);
             var modelFiles = Directory.GetFiles(modelsPath, "*.cs");
@@ -416,7 +433,11 @@ namespace SpargoTest.Repository
             if (createTablesQuery.Length == 0)
                 return;
 
-            ExecuteNonQuery(createTablesQuery.ToString(), DatabaseConnectionString, out Result result);
+            ExecuteNonQuery(createTablesQuery.ToString(), DatabaseConnectionString, out result);
+
+            if (!result.Success)
+                return;
+
             if (foreignKeysQuery.Length > 0)
                 ExecuteNonQuery(foreignKeysQuery.ToString(), DatabaseConnectionString, out result);
         }

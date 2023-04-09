@@ -62,8 +62,37 @@ namespace SpargoTest.Services
         /// </summary>
         public static void WriteSuccessMessage()
         {
-            Tools.Terminal.Output("Операция выполнена успешно. Нажмите любую клавишу.");
-            Tools.Terminal.Input();
+            Terminal.Output("Операция выполнена успешно. Нажмите любую клавишу.");
+            Terminal.Input();
+        }
+
+        /// <summary>
+        /// Вывод сообщения об итогах операции
+        /// </summary>
+        /// <param name="result">Результат операции</param>
+        public static void WriteResultMessage(Result result)
+        {
+            if (!result.Success)
+                WriteErrorMessage(result.ErrorMessage);
+
+            WriteSuccessMessage();
+        }
+
+        /// <summary>
+        /// Обработка результата операции
+        /// </summary>
+        /// <param name="result">Результат операции</param>
+        /// <returns>Результат обработки</returns>
+        public static bool HandleResult(Result result)
+        {
+            if (!result.Success)
+            {
+                WriteErrorMessage(result.ErrorMessage);
+                
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -93,7 +122,7 @@ namespace SpargoTest.Services
                 var properties = typeof(T).GetProperties();
                 var values = properties.Select(p => $"{p.Name}: '{p.GetValue(item)}'");
 
-                Tools.Terminal.Output(string.Join(", ", values));
+                Terminal.Output(string.Join(", ", values));
             }
         }
 
@@ -110,7 +139,7 @@ namespace SpargoTest.Services
 
             while (!result.Success)
             {
-                Tools.Terminal.Output($"Объект с идентификатором {id} не найден.");
+                Terminal.Output($"Объект с идентификатором {id} не найден.");
                 id = Tools.Input<int>(message);
                 Storage.Get<T>(id, out result);
             }
@@ -143,6 +172,20 @@ namespace SpargoTest.Services
         }
 
         /// <summary>
+        /// Вывод сообщения об ошибке
+        /// <param name="errorMessage">Текст ошибки</param>
+        /// </summary>
+        private static void WriteErrorMessage(string? errorMessage)
+        {
+            if (errorMessage == null)
+                Terminal.Output($"Операция не выполнена. Нажмите любую клавишу");
+            else
+                Terminal.Output($"{errorMessage}. Нажмите любую клавишу");
+
+            Terminal.Input();
+        }
+
+        /// <summary>
         /// Получение значения
         /// </summary>
         /// <typeparam name="T">Тип значения</typeparam>
@@ -152,11 +195,11 @@ namespace SpargoTest.Services
         {
             T? value;
 
-            Tools.Terminal.Output(message);
+            Terminal.Output(message);
 
-            while (!Tools.StringTryParse(Tools.Terminal.Input(), out value))
+            while (!StringTryParse(Terminal.Input(), out value))
             {
-                Tools.Terminal.Output("Введите корректное значение");
+                Terminal.Output("Введите корректное значение");
             }
 
             return value;

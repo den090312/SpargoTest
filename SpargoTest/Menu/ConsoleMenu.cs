@@ -71,18 +71,18 @@ namespace SpargoTest.Menu
                     WriteError(menuItemsCount);
                 else
                 {
-                    if (choice < 1 || choice > menuItemsCount)
+                    if (choice >= 1 && choice <= menuItemsCount)
+                    {
+                        proceed = true;
+
+                        return;
+                    }
+                    else
                     {
                         if (choice != menuItemsCount + 1)
                             WriteError(menuItemsCount);
                         else
                             exit = true;
-                    }
-                    else
-                    {
-                        proceed = true;
-
-                        return;
                     }
                 }
             }
@@ -107,7 +107,8 @@ namespace SpargoTest.Menu
                 return;
 
             crud.Create<T>(panel.Get(), out Result result);
-            Tools.WriteSuccessMessage();
+
+            Tools.WriteResultMessage(result);
         }
 
         /// <summary>
@@ -160,6 +161,8 @@ namespace SpargoTest.Menu
             }
 
             crud.Remove<T>(id, out Result result);
+
+            Tools.WriteResultMessage(result);
         }
 
         /// <summary>
