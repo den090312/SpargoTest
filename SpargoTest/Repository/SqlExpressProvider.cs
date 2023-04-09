@@ -131,7 +131,7 @@ namespace SpargoTest.Repository
             var parameters = new[] { new SqlParameter("@Id", Id) };
             var data = GetData($"SELECT * FROM {typeof(T).Name} WHERE Id = @Id", DatabaseConnectionString, out result, parameters).FirstOrDefault();
 
-            if (!result.Success)
+            if (data == null || !result.Success)
                 return default;
 
             var item = Activator.CreateInstance<T>();
@@ -259,7 +259,7 @@ namespace SpargoTest.Repository
             {
                 var reader = GetReader(connection, parameters, query, out result);
 
-                if (!result.Success || reader == null)
+                if (reader == null || !result.Success)
                     return Enumerable.Empty<Dictionary<string, object>>();
 
                 while (reader.Read())
@@ -272,6 +272,9 @@ namespace SpargoTest.Repository
                     data.Add(rowData);
                 }
             }
+
+            if (data.Count == 0)
+                result.ErrorMessage = "Нет данных";
 
             return data;
         }
