@@ -16,6 +16,18 @@ namespace SpargoTest.Panel
     public class WarehousePanel : IPanel<Warehouse>
     {
         /// <summary>
+        /// Терминал ввода-вывода
+        /// </summary>
+        private ITerminal _terminal;
+
+        /// <summary>
+        /// Конструктор панели создания склада
+        /// </summary>
+        /// <param name="terminal">Терминал ввода-вывода</param>
+        /// <exception cref="ArgumentNullException">Исключение при значении null</exception>
+        public WarehousePanel(ITerminal terminal) => _terminal = terminal ?? throw new ArgumentNullException(nameof(terminal));
+
+        /// <summary>
         /// Получение склада
         /// </summary>
         /// <returns>Склад</returns>
@@ -23,12 +35,18 @@ namespace SpargoTest.Panel
         {
             var warehouse = new Warehouse();
 
-            warehouse.PharmacyId = Tools.CheckId<Pharmacy>("Введите идентификатор аптеки:");
+            warehouse.PharmacyId = _terminal.CheckId<Pharmacy>("Введите идентификатор аптеки:");
 
-            Tools.Terminal.Output("Введите наименование склада:");
-            warehouse.Name = Tools.Terminal.Input();
+            _terminal.Output("Введите наименование склада:");
+            warehouse.Name = _terminal.Input();
 
             return warehouse;
         }
+
+        /// <summary>
+        /// Вывод сообщения
+        /// </summary>
+        /// <param name="message">Текст сообщения</param>
+        public void Output(string? message) => _terminal.Output(message);
     }
 }

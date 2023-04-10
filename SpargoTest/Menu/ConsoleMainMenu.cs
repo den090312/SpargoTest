@@ -10,8 +10,20 @@ namespace SpargoTest.Menu
     /// <summary>
     /// Главное консольное меню
     /// </summary>
-    public class ConsoleMenu : IMainMenu
+    public class ConsoleMainMenu : IMainMenu
     {
+        /// <summary>
+        /// Терминал ввода-вывода
+        /// </summary>
+        private ITerminal _terminal;
+
+        /// <summary>
+        /// Конструктор главного консольного меню
+        /// </summary>
+        /// <param name="terminal">Терминал ввода-вывода</param>
+        /// <exception cref="ArgumentNullException">Исключение при значении null</exception>
+        public ConsoleMainMenu(ITerminal terminal) => _terminal = terminal ?? throw new ArgumentNullException(nameof(terminal));
+
         /// <summary>
         /// Заголовок списка 
         /// </summary>
@@ -52,8 +64,8 @@ namespace SpargoTest.Menu
         /// </summary>
         /// <param name="subMenu">Пункт подменю</param>
         /// <param name="items">Перечень пунктов подменю</param>
-        /// <param name="io">Интерфейс ввода-вывода</param>
         /// <param name="choice">Выбор опции для действия</param>
+        /// <param name="proceed">Подтверждение запуска пункта меню</param>
         public void Go<T>(ISubMenu subMenu, IEnumerable<T> items, out int choice, out bool proceed)
         {
             Console.Clear();
@@ -67,7 +79,7 @@ namespace SpargoTest.Menu
             {
                 WriteSubMenu(subMenu, items, out int menuItemsCount);
 
-                if (!int.TryParse(Tools.Terminal.Input(), out choice))
+                if (!int.TryParse(_terminal.Input(), out choice))
                     WriteError(menuItemsCount);
                 else
                 {
@@ -102,14 +114,14 @@ namespace SpargoTest.Menu
             if (choice == 2)
             {
                 Delete<T>(crud, out result);
-                Tools.WriteResultMessage(result);
+                _terminal.WriteResultMessage(result);
             }
 
             if (choice != 1)
                 return;
 
             crud.Create<T>(panel.Get(), out result);
-            Tools.WriteResultMessage(result);
+            _terminal.WriteResultMessage(result);
         }
 
         /// <summary>
@@ -129,20 +141,20 @@ namespace SpargoTest.Menu
         /// <param name="menuItemsCount">Количество пунктов подменю</param>
         private void WriteSubMenu<T>(ISubMenu subMenu, IEnumerable<T> items, out int menuItemsCount)
         {
-            Tools.Terminal.Output(subMenu.Title);
-            Tools.Output(items);
+            _terminal.Output(subMenu.Title);
+            _terminal.Output(items);
 
             var i = 1;
 
             foreach (var item in subMenu.Items)
             {
-                Tools.Terminal.Output($"{i}. {item}");
+                _terminal.Output($"{i}. {item}");
                 i++;
             }
 
             menuItemsCount = subMenu.Items.Count();
 
-            Tools.Terminal.Output($"{menuItemsCount + 1}. Назад");
+            _terminal.Output($"{menuItemsCount + 1}. Назад");
         }
 
         /// <summary>
@@ -150,15 +162,15 @@ namespace SpargoTest.Menu
         /// </summary>
         /// <typeparam name="T">Тип удаляемого объекта</typeparam>
         /// <param name="crud">Набор операций с объектами</param>
-        private static void Delete<T>(ICrud crud, out Result result)
+        private void Delete<T>(ICrud crud, out Result result)
         {
             int id;
 
-            Tools.Terminal.Output("Введите идентификатор для удаления:");
+            _terminal.Output("Введите идентификатор для удаления:");
 
-            while (!int.TryParse(Tools.Terminal.Input(), out id))
+            while (!int.TryParse(_terminal.Input(), out id))
             {
-                Tools.Terminal.Output("Введите корректное число!");
+                _terminal.Output("Введите корректное число!");
             }
 
             crud.Remove<T>(id, out result);
@@ -168,10 +180,10 @@ namespace SpargoTest.Menu
         /// Вывод ошибки меню
         /// </summary>
         /// <param name="count">Количество пунктов меню</param>
-        private static void WriteError(int count)
+        private void WriteError(int count)
         {
             Console.Clear();
-            Tools.Terminal.Output($"Неверный ввод. Пожалуйста, введите число от 1 до {count + 1}.");
+            _terminal.Output($"Неверный ввод. Пожалуйста, введите число от 1 до {count + 1}.");
         }
     }
 }

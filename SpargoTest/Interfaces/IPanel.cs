@@ -13,5 +13,11 @@ namespace SpargoTest.Interfaces
         /// </summary>
         /// <returns>Получаемый объект</returns>
         T Get();
+
+        /// <summary>
+        /// Вывод сообщения
+        /// </summary>
+        /// <param name="message">Текст сообщения</param>
+        void Output(string? message);
     }
 }

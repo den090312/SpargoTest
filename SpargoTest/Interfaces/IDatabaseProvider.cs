@@ -13,12 +13,6 @@ namespace SpargoTest.Interfaces
         void Initialize();
 
         /// <summary>
-        /// Тест соединения с сервером
-        /// </summary>
-        /// <returns>Индикатор успешного соединения</returns>
-        bool ServerOnline();
-
-        /// <summary>
         /// Добавить объект в базу данных
         /// </summary>
         /// <typeparam name="T">Тип добавляемого объекта</typeparam>

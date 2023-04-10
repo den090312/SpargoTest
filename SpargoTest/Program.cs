@@ -8,6 +8,7 @@ using SpargoTest.Interfaces;
 using SpargoTest.Menu;
 using SpargoTest.Services;
 using SpargoTest.Models;
+using SpargoTest.Repository;
 
 namespace SpargoTest
 {
@@ -15,16 +16,29 @@ namespace SpargoTest
     {
         static void Main(string[] args)
         {
+            var provider = SqlExpressProvider.Create();
+
+            if (provider == default)
+            {
+                Console.WriteLine("Не могу подключиться");
+
+                return;
+            }
+
+            var crud = new Storage(provider);
+            var terminal = new ConsoleTerminal(crud);
+            var appManager = new ApplicationManager(provider, new Storage(provider), new ConsoleMainMenu(terminal));
+
             var exit = false;
 
             while (!exit)
             {
-                WriteMainMenu();
+                WriteMainMenu(terminal);
 
-                if (!int.TryParse(Tools.Terminal.Input(), out int choice))
-                    Tools.Terminal.Output("Неверный ввод. Пожалуйста, введите число от 1 до 6.");
+                if (!int.TryParse(terminal.Input(), out int choice))
+                    terminal.Output("Неверный ввод. Пожалуйста, введите число от 1 до 6.");
                 else
-                    ChoiceProcessing(ref exit, choice);
+                    ChoiceProcess(ref exit, choice, terminal, appManager);
             }
         }
 
@@ -33,27 +47,30 @@ namespace SpargoTest
         /// </summary>
         /// <param name="exit">Индикатор выхода из меню</param>
         /// <param name="choice">Маркер выбора</param>
-        private static void ChoiceProcessing(ref bool exit, int choice)
+        /// <param name="terminal">Терминал ввода-вывода</param>
+        /// <param name="crud">Интерфейс операций с объектами</param>
+        /// <param name="menu">Главное меню</param>
+        private static void ChoiceProcess(ref bool exit, int choice, ITerminal terminal, ApplicationManager appManager)
         {
             switch (choice)
             {
                 case 1:
-                    Choice(choice, ConsoleMenu.Products, "товар", new ProductPanel());
+                    Choice(choice, ConsoleMainMenu.Products, "товар", new ProductPanel(terminal), appManager.Crud, appManager.Menu);
                     break;
                 case 2:
-                    Choice(choice, ConsoleMenu.Pharmacies, "аптеку", new PharmacyPanel());
+                    Choice(choice, ConsoleMainMenu.Pharmacies, "аптеку", new PharmacyPanel(terminal), appManager.Crud, appManager.Menu);
                     break;
                 case 3:
-                    Choice(choice, ConsoleMenu.Warehouses, "склад", new WarehousePanel());
+                    Choice(choice, ConsoleMainMenu.Warehouses, "склад", new WarehousePanel(terminal), appManager.Crud, appManager.Menu);
                     break;
                 case 4:
-                    Choice(choice, ConsoleMenu.Consignments, "партию", new ConsignmentPanel());
+                    Choice(choice, ConsoleMainMenu.Consignments, "партию", new ConsignmentPanel(terminal), appManager.Crud, appManager.Menu);
                     break;
                 case 5:
-                    GetProductByPharmacy();
+                    GetProductByPharmacy(terminal);
                     break;
                 case 6:
-                    Tools.InitializeDatabase();
+                    appManager.Provider.Initialize();
                     break;
                 case 7:
                     exit = true;
@@ -63,29 +80,41 @@ namespace SpargoTest
 
         /// <summary>
         /// Получение продукта по аптеке
+        /// <param name="terminal">Терминал ввода-вывода</param>
         /// </summary>
-        private static void GetProductByPharmacy()
+        private static void GetProductByPharmacy(ITerminal terminal)
         {
-            var pharmacyId = Tools.CheckId<Pharmacy>("Введите идентификатор аптеки:");
-            var products = Tools.GetProductsByPharmacy(pharmacyId);
-            Tools.Output(products);
-            Tools.WriteSuccessMessage();
+            var pharmacyId = terminal.CheckId<Pharmacy>("Введите идентификатор аптеки:");
+            var sqlDbProvider = SqlExpressProvider.Create();
+
+            if (sqlDbProvider == default)
+            {
+                Console.WriteLine("Не могу подключиться");
+
+                return;
+            }
+
+            var products = sqlDbProvider.GetProductsByPharmacy(pharmacyId);
+
+            terminal.Output(products);
+            terminal.WriteSuccessMessage();
         }
 
         /// <summary>
         /// Главное меню
+        /// <param name="terminal">Терминал ввода-вывода</param>
         /// </summary>
-        private static void WriteMainMenu()
+        private static void WriteMainMenu(ITerminal terminal)
         {
             Console.Clear();
-            Tools.Terminal.Output("Главное меню:");
-            Tools.Terminal.Output($"1. {ConsoleMenu.Products}");
-            Tools.Terminal.Output($"2. {ConsoleMenu.Pharmacies}");
-            Tools.Terminal.Output($"3. {ConsoleMenu.Warehouses}");
-            Tools.Terminal.Output($"4. {ConsoleMenu.Consignments}");
-            Tools.Terminal.Output("5. Вывести список товаров и их количество в выбранной аптеке");
-            Tools.Terminal.Output("6. Пересоздать базу данных");
-            Tools.Terminal.Output("7. Выход");
+            terminal.Output("Главное меню:");
+            terminal.Output($"1. {ConsoleMainMenu.Products}");
+            terminal.Output($"2. {ConsoleMainMenu.Pharmacies}");
+            terminal.Output($"3. {ConsoleMainMenu.Warehouses}");
+            terminal.Output($"4. {ConsoleMainMenu.Consignments}");
+            terminal.Output("5. Вывести список товаров и их количество в выбранной аптеке");
+            terminal.Output("6. Пересоздать базу данных");
+            terminal.Output("7. Выход");
         }
 
         /// <summary>
@@ -96,18 +125,19 @@ namespace SpargoTest
         /// <param name="subMenuTitle">Заголовок подменю</param>
         /// <param name="subMenuName">Имя меню</param>
         /// <param name="input">Интерфейс для ввода данных</param>
-        private static void Choice<T>(int choice, string subMenuTitle, string subMenuName, IPanel<T> input) where T : class
+        /// <param name="crud">Интерфейс операций с объектами</param>
+        private static void Choice<T>(int choice, string subMenuTitle, string subMenuName, IPanel<T> input, ICrud crud, IMainMenu mainMenu) where T : class
         {
-            var subMenu = new ConsoleSubMenu { Title = subMenuTitle + ":", Items = Tools.Menu.GetSubMenu(subMenuName) };
-            var items = Tools.Storage.GetAll<T>(out Result result);
+            var subMenu = new ConsoleSubMenu { Title = subMenuTitle + ":", Items = mainMenu.GetSubMenu(subMenuName) };
+            var items = crud.GetAll<T>(out Result result);
 
             if (!result.Success)
-                Tools.Terminal.Output($"Ошибка при получении {subMenuName}");
+                input.Output($"Ошибка при получении {subMenuName}");
 
-            Tools.Menu.Go(subMenu, items, out choice, out bool proceed);
+            mainMenu.Go(subMenu, items, out choice, out bool proceed);
 
             if (proceed)
-                Tools.Menu.Action(choice, Tools.Storage, input);
+                mainMenu.Action(choice, crud, input);
         }
     }
 }

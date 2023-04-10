@@ -18,7 +18,7 @@ namespace SpargoTest.Repository
         /// <summary>
         /// Строка подключения к серверу
         /// </summary>
-        private string _serverConnectionString = "Server=(localdb)\\mssqllocaldb;Trusted_Connection=True;";
+        private static string _serverConnectionString = "Server=(localdb)\\mssqllocaldb;Trusted_Connection=True;";
 
         /// <summary>
         /// Имя базы данных
@@ -43,16 +43,20 @@ namespace SpargoTest.Repository
         /// <summary>
         /// Конструктор провайдера базы данных SQL Server Express
         /// </summary>
-        /// <param name="createTables">Создание базы данных</param>
-        /// <param name="createTables">Создание таблиц</param>
-        public SqlExpressProvider()
+        private SqlExpressProvider()
+        {
+        }
+
+        /// <summary>
+        /// Создание экземпляра провайдера базы данных SQL Server Express
+        /// </summary>
+        /// <returns>Индикатор</returns>
+        public static SqlExpressProvider? Create()
         {
             if (!ServerOnline())
-            {
-                Tools.Terminal.Output("Не удалось соединиться с сервером");
+                return default;
 
-                return;
-            }
+            return new SqlExpressProvider();
         }
 
         /// <summary>
@@ -62,22 +66,20 @@ namespace SpargoTest.Repository
         {
             CreateDatabase(out Result result);
 
-            if (!Tools.HandleResult(result))
+            if (!result.Success)
                 return;
 
             CreateTables(out result);
-            
-            if (!Tools.HandleResult(result))
-                return;
 
-            Tools.WriteSuccessMessage();
+            if (!result.Success)
+                return;
         }
 
         /// <summary>
         /// Тест подключения к серверу
         /// </summary>
         /// <returns>Результат теста поключения</returns>
-        public bool ServerOnline()
+        public static bool ServerOnline()
         {
             using var connection = new SqlConnection(_serverConnectionString);
 
