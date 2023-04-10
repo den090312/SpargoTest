@@ -16,18 +16,8 @@ namespace SpargoTest
     {
         static void Main(string[] args)
         {
-            var provider = SqlExpressProvider.Create();
-
-            if (provider == default)
-            {
-                Console.WriteLine("Не могу подключиться");
-
-                return;
-            }
-
-            var crud = new Storage(provider);
-            var terminal = new ConsoleTerminal(crud);
-            var manager = new ApplicationManager(provider, crud, new ConsoleMainMenu(terminal));
+            var container = RegisterContainer();
+            var terminal = container.Resolve<ITerminal>();
 
             var exit = false;
 
@@ -38,8 +28,30 @@ namespace SpargoTest
                 if (!int.TryParse(terminal.Input(), out int choice))
                     terminal.Output("Неверный ввод. Пожалуйста, введите число от 1 до 7.");
                 else
-                    ChoiceProcessing(ref exit, choice, terminal, manager);
+                    ChoiceProcessing(ref exit, choice, terminal, container);
             }
+        }
+
+        /// <summary>
+        /// Регистрация зависимостей в контейнере
+        /// </summary>
+        /// <returns>Контейнер</returns>
+        private static IoCContainer RegisterContainer()
+        {
+            var container = new IoCContainer();
+
+            container.Register<ICrud, Storage>();
+            container.Register<IDatabaseProvider, SqlExpressProvider>();
+            container.Register<IMainMenu, ConsoleMainMenu>();
+            container.Register<ISubMenu, ConsoleSubMenu>();
+            container.Register<ITerminal, ConsoleTerminal>();
+
+            container.Register<IPanel<Product>, ProductPanel>();
+            container.Register<IPanel<Pharmacy>, PharmacyPanel>();
+            container.Register<IPanel<Warehouse>, WarehousePanel>();
+            container.Register<IPanel<Consignment>, ConsignmentPanel>();
+
+            return container;
         }
 
         /// <summary>
@@ -48,28 +60,32 @@ namespace SpargoTest
         /// <param name="exit">Индикатор выхода из меню</param>
         /// <param name="choice">Маркер выбора</param>
         /// <param name="terminal">Терминал ввода-вывода</param>
-        /// <param name="manager">Менеджер приложения</param>
-        private static void ChoiceProcessing(ref bool exit, int choice, ITerminal terminal, ApplicationManager manager)
+        /// <param name="container">Контейнер зависимостей</param>
+        private static void ChoiceProcessing(ref bool exit, int choice, ITerminal terminal, IoCContainer container)
         {
+            var crud = container.Resolve<ICrud>();
+            var menu = container.Resolve<IMainMenu>();
+            var provider = container.Resolve<IDatabaseProvider>();
+
             switch (choice)
             {
                 case 1:
-                    Choice(choice, ConsoleMainMenu.Products, "товар", new ProductPanel(terminal), manager.Crud, manager.Menu);
+                    Choice(choice, ConsoleMainMenu.Products, "товар", container.Resolve<IPanel<Product>>(), crud, menu);
                     break;
                 case 2:
-                    Choice(choice, ConsoleMainMenu.Pharmacies, "аптеку", new PharmacyPanel(terminal), manager.Crud, manager.Menu);
+                    Choice(choice, ConsoleMainMenu.Pharmacies, "аптеку", container.Resolve<IPanel<Pharmacy>>(), crud, menu);
                     break;
                 case 3:
-                    Choice(choice, ConsoleMainMenu.Warehouses, "склад", new WarehousePanel(terminal), manager.Crud, manager.Menu);
+                    Choice(choice, ConsoleMainMenu.Warehouses, "склад", container.Resolve<IPanel<Warehouse>>(), crud, menu);
                     break;
                 case 4:
-                    Choice(choice, ConsoleMainMenu.Consignments, "партию", new ConsignmentPanel(terminal), manager.Crud, manager.Menu);
+                    Choice(choice, ConsoleMainMenu.Consignments, "партию", container.Resolve<IPanel<Consignment>>(), crud, menu);
                     break;
                 case 5:
                     GetProductByPharmacy(terminal);
                     break;
                 case 6:
-                    CreateDatabase(terminal, manager.Provider);
+                    CreateDatabase(terminal, provider);
                     break;
                 case 7:
                     exit = true;
@@ -105,9 +121,9 @@ namespace SpargoTest
         private static void GetProductByPharmacy(ITerminal terminal)
         {
             var pharmacyId = terminal.CheckId<Pharmacy>("Введите идентификатор аптеки:");
-            var sqlDbProvider = SqlExpressProvider.Create();
+            var sqlDbProvider = new SqlExpressProvider();
 
-            if (sqlDbProvider == default)
+            if (!sqlDbProvider.ServerOnline())
             {
                 Console.WriteLine("Не могу подключиться");
 

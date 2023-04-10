@@ -41,25 +41,6 @@ namespace SpargoTest.Repository
         private string LogFileName => Path.Combine(Tools.BaseDirectory(), $"{_databaseName}_log.ldf");
 
         /// <summary>
-        /// Конструктор провайдера базы данных SQL Server Express
-        /// </summary>
-        private SqlExpressProvider()
-        {
-        }
-
-        /// <summary>
-        /// Создание экземпляра провайдера базы данных SQL Server Express
-        /// </summary>
-        /// <returns>Провайдер базы данных SQL Server Express</returns>
-        public static SqlExpressProvider? Create()
-        {
-            if (!ServerOnline())
-                return default;
-
-            return new SqlExpressProvider();
-        }
-
-        /// <summary>
         /// Инициализация базы данных SQL Server Express
         /// <param name="result">Результат инициализации</param>
         /// </summary>
@@ -77,7 +58,7 @@ namespace SpargoTest.Repository
         /// Тест подключения к серверу
         /// </summary>
         /// <returns>Результат теста поключения</returns>
-        public static bool ServerOnline()
+        public bool ServerOnline()
         {
             using var connection = new SqlConnection(_serverConnectionString);
 

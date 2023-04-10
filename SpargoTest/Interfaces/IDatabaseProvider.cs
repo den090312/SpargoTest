@@ -8,6 +8,12 @@ namespace SpargoTest.Interfaces
     public interface IDatabaseProvider
     {
         /// <summary>
+        /// Тест подключения к серверу
+        /// </summary>
+        /// <returns>Результат теста поключения</returns>
+        bool ServerOnline();
+
+        /// <summary>
         /// Инициализация базы данных
         /// </summary>
         /// <param name="result">Результат инициализации</param>
