@@ -61,10 +61,11 @@ namespace SpargoTest.Repository
 
         /// <summary>
         /// Инициализация базы данных SQL Server Express
+        /// <param name="result">Результат инициализации</param>
         /// </summary>
-        public void Initialize()
+        public void Initialize(out Result result)
         {
-            CreateDatabase(out Result result);
+            CreateDatabase(out result);
 
             if (!result.Success)
                 return;
@@ -97,7 +98,7 @@ namespace SpargoTest.Repository
         /// </summary>
         /// <typeparam name="T">Тип записываемого объекта</typeparam>
         /// <param name="obj">Объект для записи</param>
-        /// <param name="result">Возможнеы ошибки при записи</param>
+        /// <param name="result">Возможные ошибки при записи</param>
         public void Add<T>(T obj, out Result result)
         {
             var type = typeof(T);
@@ -123,7 +124,7 @@ namespace SpargoTest.Repository
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="Id">Идентификатор объекта</param>
-        /// <param name="result"></param>
+        /// <param name="result">Возможные ошибки при получении объекта</param>
         /// <returns>Получаемый объект</returns>
         public T? Get<T>(int Id, out Result result)
         {

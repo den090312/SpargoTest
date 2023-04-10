@@ -69,7 +69,17 @@ namespace SpargoTest
                     GetProductByPharmacy(terminal);
                     break;
                 case 6:
-                    appManager.Provider.Initialize();
+                    appManager.Provider.Initialize(out Result result);
+                    if (result.Success)
+                    {
+                        terminal.Output("База данных успешно создана. Нажмите любую клавишу");
+                        terminal.Input();
+                    }
+                    else
+                    {
+                        terminal.Output($"Ошибка создания базы: '{result.ErrorMessage}'. Нажмите любую клавишу");
+                        terminal.Input();
+                    }
                     break;
                 case 7:
                     exit = true;

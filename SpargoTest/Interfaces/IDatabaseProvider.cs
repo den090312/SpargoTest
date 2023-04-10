@@ -10,7 +10,8 @@ namespace SpargoTest.Interfaces
         /// <summary>
         /// Инициализация базы данных
         /// </summary>
-        void Initialize();
+        /// <param name="result">Результат инициализации</param>
+        void Initialize(out Result result);
 
         /// <summary>
         /// Добавить объект в базу данных
