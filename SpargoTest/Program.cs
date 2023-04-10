@@ -38,7 +38,7 @@ namespace SpargoTest
         /// Регистрация зависимостей в контейнере
         /// </summary>
         /// <returns>Контейнер</returns>
-        private static void  RegisterContainer(ref IContainer container)
+        private static void RegisterContainer(ref IContainer container)
         {
             container.Register<ICrud, Storage>();
             container.Register<IDatabaseProvider, SqlExpressProvider>();
@@ -119,6 +119,8 @@ namespace SpargoTest
         private static void GetProductByPharmacy(ITerminal terminal)
         {
             var pharmacyId = terminal.CheckId<Pharmacy>("Введите идентификатор аптеки:");
+
+            //Метод GetProductByPharmacy получился неуниверсальным из-за специфики SQL запроса с несколькими таблицами 
             var sqlDbProvider = new SqlExpressProvider();
 
             if (!sqlDbProvider.ServerOnline())
