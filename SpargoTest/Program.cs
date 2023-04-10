@@ -146,6 +146,7 @@ namespace SpargoTest
         /// <param name="subMenuName">Имя меню</param>
         /// <param name="panel">Панель данных</param>
         /// <param name="crud">Интерфейс операций с объектами</param>
+        /// <param name="crud">Интерфейс главного меню</param>
         private static void Choice<T>(int choice, string subMenuTitle, string subMenuName, IPanel<T> panel, ICrud crud, IMainMenu menu) where T : class
         {
             var subMenu = new ConsoleSubMenu { Title = subMenuTitle + ":", Items = menu.GetSubMenu(subMenuName) };
