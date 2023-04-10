@@ -1,9 +1,11 @@
-﻿namespace SpargoTest.Services
+﻿using SpargoTest.Interfaces;
+
+namespace SpargoTest.Services
 {
     /// <summary>
     /// Transient IoC контейнер
     /// </summary>
-    public class IoCContainer
+    public class TransientContainer : IContainer
     {
         private readonly Dictionary<Type, Type> _typeMap = new Dictionary<Type, Type>();
 

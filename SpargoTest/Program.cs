@@ -16,7 +16,9 @@ namespace SpargoTest
     {
         static void Main(string[] args)
         {
-            var container = RegisterContainer();
+            IContainer container = new TransientContainer();
+            RegisterContainer(ref container);
+
             var terminal = container.Resolve<ITerminal>();
 
             var exit = false;
@@ -36,10 +38,8 @@ namespace SpargoTest
         /// Регистрация зависимостей в контейнере
         /// </summary>
         /// <returns>Контейнер</returns>
-        private static IoCContainer RegisterContainer()
+        private static void  RegisterContainer(ref IContainer container)
         {
-            var container = new IoCContainer();
-
             container.Register<ICrud, Storage>();
             container.Register<IDatabaseProvider, SqlExpressProvider>();
             container.Register<IMainMenu, ConsoleMainMenu>();
@@ -50,8 +50,6 @@ namespace SpargoTest
             container.Register<IPanel<Pharmacy>, PharmacyPanel>();
             container.Register<IPanel<Warehouse>, WarehousePanel>();
             container.Register<IPanel<Consignment>, ConsignmentPanel>();
-
-            return container;
         }
 
         /// <summary>
@@ -61,7 +59,7 @@ namespace SpargoTest
         /// <param name="choice">Маркер выбора</param>
         /// <param name="terminal">Терминал ввода-вывода</param>
         /// <param name="container">Контейнер зависимостей</param>
-        private static void ChoiceProcessing(ref bool exit, int choice, ITerminal terminal, IoCContainer container)
+        private static void ChoiceProcessing(ref bool exit, int choice, ITerminal terminal, IContainer container)
         {
             var crud = container.Resolve<ICrud>();
             var menu = container.Resolve<IMainMenu>();
