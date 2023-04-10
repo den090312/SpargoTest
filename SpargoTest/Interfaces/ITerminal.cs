@@ -37,7 +37,6 @@ namespace SpargoTest.Interfaces
         /// <param name="result">Результат операции</param>
         void WriteResultMessage(Result result);
 
-
         /// <summary>
         /// Обработка результата операции
         /// </summary>

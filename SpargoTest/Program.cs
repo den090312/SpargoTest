@@ -27,7 +27,7 @@ namespace SpargoTest
 
             var crud = new Storage(provider);
             var terminal = new ConsoleTerminal(crud);
-            var appManager = new ApplicationManager(provider, new Storage(provider), new ConsoleMainMenu(terminal));
+            var appManager = new ApplicationManager(provider, crud, new ConsoleMainMenu(terminal));
 
             var exit = false;
 
@@ -36,9 +36,9 @@ namespace SpargoTest
                 WriteMainMenu(terminal);
 
                 if (!int.TryParse(terminal.Input(), out int choice))
-                    terminal.Output("Неверный ввод. Пожалуйста, введите число от 1 до 6.");
+                    terminal.Output("Неверный ввод. Пожалуйста, введите число от 1 до 7.");
                 else
-                    ChoiceProcess(ref exit, choice, terminal, appManager);
+                    ChoiceProcessing(ref exit, choice, terminal, appManager);
             }
         }
 
@@ -48,9 +48,8 @@ namespace SpargoTest
         /// <param name="exit">Индикатор выхода из меню</param>
         /// <param name="choice">Маркер выбора</param>
         /// <param name="terminal">Терминал ввода-вывода</param>
-        /// <param name="crud">Интерфейс операций с объектами</param>
-        /// <param name="menu">Главное меню</param>
-        private static void ChoiceProcess(ref bool exit, int choice, ITerminal terminal, ApplicationManager appManager)
+        /// <param name="appManager">Менеджер приложения</param>
+        private static void ChoiceProcessing(ref bool exit, int choice, ITerminal terminal, ApplicationManager appManager)
         {
             switch (choice)
             {
@@ -124,20 +123,20 @@ namespace SpargoTest
         /// <param name="choice">Опция выбора</param>
         /// <param name="subMenuTitle">Заголовок подменю</param>
         /// <param name="subMenuName">Имя меню</param>
-        /// <param name="input">Интерфейс для ввода данных</param>
+        /// <param name="panel">Панель данных</param>
         /// <param name="crud">Интерфейс операций с объектами</param>
-        private static void Choice<T>(int choice, string subMenuTitle, string subMenuName, IPanel<T> input, ICrud crud, IMainMenu mainMenu) where T : class
+        private static void Choice<T>(int choice, string subMenuTitle, string subMenuName, IPanel<T> panel, ICrud crud, IMainMenu mainMenu) where T : class
         {
             var subMenu = new ConsoleSubMenu { Title = subMenuTitle + ":", Items = mainMenu.GetSubMenu(subMenuName) };
             var items = crud.GetAll<T>(out Result result);
 
             if (!result.Success)
-                input.Output($"Ошибка при получении {subMenuName}");
+                panel.Output($"Ошибка при получении {subMenuName}");
 
             mainMenu.Go(subMenu, items, out choice, out bool proceed);
 
             if (proceed)
-                mainMenu.Action(choice, crud, input);
+                mainMenu.Action(choice, crud, panel);
         }
     }
 }

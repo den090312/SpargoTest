@@ -8,11 +8,11 @@ namespace SpargoTest.Panel
     /// Панель создания аптеки
     /// </summary>
     public class PharmacyPanel : IPanel<Pharmacy>
-    {
+    {   
         /// <summary>
         /// Терминал ввода-вывода
         /// </summary>
-        private ITerminal _terminal;
+        private readonly ITerminal _terminal;
 
         /// <summary>
         /// Конструктор панели создания аптеки

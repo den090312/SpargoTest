@@ -15,7 +15,7 @@ namespace SpargoTest.Menu
         /// <summary>
         /// Терминал ввода-вывода
         /// </summary>
-        private ITerminal _terminal;
+        private readonly ITerminal _terminal;
 
         /// <summary>
         /// Конструктор главного консольного меню

@@ -18,27 +18,27 @@ namespace SpargoTest.Repository
         /// <summary>
         /// Строка подключения к серверу
         /// </summary>
-        private static string _serverConnectionString = "Server=(localdb)\\mssqllocaldb;Trusted_Connection=True;";
+        private static readonly string _serverConnectionString = "Server=(localdb)\\mssqllocaldb;Trusted_Connection=True;";
 
         /// <summary>
         /// Имя базы данных
         /// </summary>
-        private string _databaseName = "SpargoTest";
+        private readonly string _databaseName = "SpargoTest";
 
         /// <summary>
         /// Строка подключения к базе данных SQL Server Express
         /// </summary>
-        public string DatabaseConnectionString => $"{_serverConnectionString}Database={_databaseName};";
+        private string DatabaseConnectionString => $"{_serverConnectionString}Database={_databaseName};";
 
         /// <summary>
         /// Полное имя файла базы данных
         /// </summary>
-        public string DatabaseFileName => Path.Combine(Tools.BaseDirectory(), $"{_databaseName}.mdf");
+        private string DatabaseFileName => Path.Combine(Tools.BaseDirectory(), $"{_databaseName}.mdf");
 
         /// <summary>
         /// Полное имя лога базы данных
         /// </summary>
-        public string LogFileName => Path.Combine(Tools.BaseDirectory(), $"{_databaseName}_log.ldf");
+        private string LogFileName => Path.Combine(Tools.BaseDirectory(), $"{_databaseName}_log.ldf");
 
         /// <summary>
         /// Конструктор провайдера базы данных SQL Server Express
@@ -50,7 +50,7 @@ namespace SpargoTest.Repository
         /// <summary>
         /// Создание экземпляра провайдера базы данных SQL Server Express
         /// </summary>
-        /// <returns>Индикатор</returns>
+        /// <returns>Провайдер базы данных SQL Server Express</returns>
         public static SqlExpressProvider? Create()
         {
             if (!ServerOnline())
@@ -70,9 +70,6 @@ namespace SpargoTest.Repository
                 return;
 
             CreateTables(out result);
-
-            if (!result.Success)
-                return;
         }
 
         /// <summary>

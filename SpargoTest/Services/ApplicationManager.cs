@@ -23,7 +23,7 @@ namespace SpargoTest.Services
         public IMainMenu Menu { get; }
 
         /// <summary>
-        /// Конструктор Менеджера приложения
+        /// Конструктор менеджера приложения
         /// </summary>
         /// <param name="provider">Провайдер для работы с базой данных</param>
         /// <param name="crud">Интерфейс операций с объектами</param>

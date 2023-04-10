@@ -12,7 +12,7 @@ namespace SpargoTest.Panel
         /// <summary>
         /// Терминал ввода-вывода
         /// </summary>
-        private ITerminal _terminal;
+        private readonly ITerminal _terminal;
 
         /// <summary>
         /// Конструктор панели создания товара
