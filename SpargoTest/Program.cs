@@ -27,7 +27,7 @@ namespace SpargoTest
 
             var crud = new Storage(provider);
             var terminal = new ConsoleTerminal(crud);
-            var appManager = new ApplicationManager(provider, crud, new ConsoleMainMenu(terminal));
+            var manager = new ApplicationManager(provider, crud, new ConsoleMainMenu(terminal));
 
             var exit = false;
 
@@ -38,7 +38,7 @@ namespace SpargoTest
                 if (!int.TryParse(terminal.Input(), out int choice))
                     terminal.Output("Неверный ввод. Пожалуйста, введите число от 1 до 7.");
                 else
-                    ChoiceProcessing(ref exit, choice, terminal, appManager);
+                    ChoiceProcessing(ref exit, choice, terminal, manager);
             }
         }
 
@@ -48,42 +48,53 @@ namespace SpargoTest
         /// <param name="exit">Индикатор выхода из меню</param>
         /// <param name="choice">Маркер выбора</param>
         /// <param name="terminal">Терминал ввода-вывода</param>
-        /// <param name="appManager">Менеджер приложения</param>
-        private static void ChoiceProcessing(ref bool exit, int choice, ITerminal terminal, ApplicationManager appManager)
+        /// <param name="manager">Менеджер приложения</param>
+        private static void ChoiceProcessing(ref bool exit, int choice, ITerminal terminal, ApplicationManager manager)
         {
             switch (choice)
             {
                 case 1:
-                    Choice(choice, ConsoleMainMenu.Products, "товар", new ProductPanel(terminal), appManager.Crud, appManager.Menu);
+                    Choice(choice, ConsoleMainMenu.Products, "товар", new ProductPanel(terminal), manager.Crud, manager.Menu);
                     break;
                 case 2:
-                    Choice(choice, ConsoleMainMenu.Pharmacies, "аптеку", new PharmacyPanel(terminal), appManager.Crud, appManager.Menu);
+                    Choice(choice, ConsoleMainMenu.Pharmacies, "аптеку", new PharmacyPanel(terminal), manager.Crud, manager.Menu);
                     break;
                 case 3:
-                    Choice(choice, ConsoleMainMenu.Warehouses, "склад", new WarehousePanel(terminal), appManager.Crud, appManager.Menu);
+                    Choice(choice, ConsoleMainMenu.Warehouses, "склад", new WarehousePanel(terminal), manager.Crud, manager.Menu);
                     break;
                 case 4:
-                    Choice(choice, ConsoleMainMenu.Consignments, "партию", new ConsignmentPanel(terminal), appManager.Crud, appManager.Menu);
+                    Choice(choice, ConsoleMainMenu.Consignments, "партию", new ConsignmentPanel(terminal), manager.Crud, manager.Menu);
                     break;
                 case 5:
                     GetProductByPharmacy(terminal);
                     break;
                 case 6:
-                    appManager.Provider.Initialize(out Result result);
-                    if (result.Success)
-                    {
-                        terminal.Output("База данных успешно создана. Нажмите любую клавишу");
-                        terminal.Input();
-                    }
-                    else
-                    {
-                        terminal.Output($"Ошибка создания базы: '{result.ErrorMessage}'. Нажмите любую клавишу");
-                        terminal.Input();
-                    }
+                    CreateDatabase(terminal, manager.Provider);
                     break;
                 case 7:
                     exit = true;
                     break;
+            }
+        }
+
+        /// <summary>
+        /// Пересоздание базы данных
+        /// </summary>
+        /// <param name="terminal">Терминал ввода-вывода</param>
+        /// <param name="provider">Провайдер базы данных</param>
+        private static void CreateDatabase(ITerminal terminal, IDatabaseProvider provider)
+        {
+            provider.Initialize(out Result result);
+
+            if (result.Success)
+            {
+                terminal.Output("База данных успешно создана. Нажмите Enter");
+                terminal.Input();
+            }
+            else
+            {
+                terminal.Output($"Ошибка создания базы: '{result.ErrorMessage}'. Нажмите Enter");
+                terminal.Input();
             }
         }
 
@@ -135,18 +146,18 @@ namespace SpargoTest
         /// <param name="subMenuName">Имя меню</param>
         /// <param name="panel">Панель данных</param>
         /// <param name="crud">Интерфейс операций с объектами</param>
-        private static void Choice<T>(int choice, string subMenuTitle, string subMenuName, IPanel<T> panel, ICrud crud, IMainMenu mainMenu) where T : class
+        private static void Choice<T>(int choice, string subMenuTitle, string subMenuName, IPanel<T> panel, ICrud crud, IMainMenu menu) where T : class
         {
-            var subMenu = new ConsoleSubMenu { Title = subMenuTitle + ":", Items = mainMenu.GetSubMenu(subMenuName) };
+            var subMenu = new ConsoleSubMenu { Title = subMenuTitle + ":", Items = menu.GetSubMenu(subMenuName) };
             var items = crud.GetAll<T>(out Result result);
 
             if (!result.Success)
                 panel.Output($"Ошибка при получении {subMenuName}");
 
-            mainMenu.Go(subMenu, items, out choice, out bool proceed);
+            menu.Go(subMenu, items, out choice, out bool proceed);
 
             if (proceed)
-                mainMenu.Action(choice, crud, panel);
+                menu.Action(choice, crud, panel);
         }
     }
 }

@@ -52,7 +52,7 @@ namespace SpargoTest.Services
         /// </summary>
         public void WriteSuccessMessage()
         {
-            Output("Операция выполнена успешно. Нажмите любую клавишу.");
+            Output("Операция выполнена успешно. Нажмите Enter.");
             Input();
         }
 
@@ -132,9 +132,9 @@ namespace SpargoTest.Services
         private void WriteError(string? errorText)
         {
             if (errorText == null)
-                Output($"Операция не выполнена. Нажмите любую клавишу");
+                Output($"Операция не выполнена. Нажмите Enter");
             else
-                Output($"{errorText}. Нажмите любую клавишу");
+                Output($"{errorText}. Нажмите Enter");
 
             Input();
         }
