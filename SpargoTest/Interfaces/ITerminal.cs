@@ -38,13 +38,6 @@ namespace SpargoTest.Interfaces
         void WriteResultMessage(Result result);
 
         /// <summary>
-        /// Обработка результата операции
-        /// </summary>
-        /// <param name="result">Результат операции</param>
-        /// <returns>Результат обработки</returns>
-        bool HandleResult(Result result);
-
-        /// <summary>
         /// Вывод свойств класса
         /// </summary>
         /// <typeparam name="T">Тип класса</typeparam>

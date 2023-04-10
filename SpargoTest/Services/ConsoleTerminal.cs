@@ -13,7 +13,7 @@ namespace SpargoTest.Services
         /// <summary>
         /// Интерфейс операций с объектами
         /// </summary>
-        private ICrud _crud;
+        private readonly ICrud _crud;
 
         /// <summary>
         /// Конструктор консольного терминала
@@ -66,23 +66,6 @@ namespace SpargoTest.Services
                 WriteError(result.ErrorMessage);
 
             WriteSuccessMessage();
-        }
-
-        /// <summary>
-        /// Обработка результата операции
-        /// </summary>
-        /// <param name="result">Результат операции</param>
-        /// <returns>Результат обработки</returns>
-        public bool HandleResult(Result result)
-        {
-            if (!result.Success)
-            {
-                WriteError(result.ErrorMessage);
-
-                return false;
-            }
-
-            return true;
         }
 
         /// <summary>
